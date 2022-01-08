@@ -15,5 +15,5 @@ public class SupportedDoc {
     @Id
     private String _id;
     @Indexed(unique = true)
-    private String name;
+    private String docName;
 }

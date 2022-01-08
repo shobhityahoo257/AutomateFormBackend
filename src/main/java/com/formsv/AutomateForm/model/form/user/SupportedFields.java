@@ -3,23 +3,23 @@ package com.formsv.AutomateForm.model.form.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 
 @AllArgsConstructor
 @Getter
 @Setter
 @Document(collation = "supportedFields")
-@CompoundIndexes({
-        @CompoundIndex(name = "userName_mobileNumber", def = "{'userName' : 1, 'mobileNumber': 1}")
-})
-public class SupportedFields {
+public class
+SupportedFields {
     @Id
     private String _id;
-    @Indexed(unique = true)
+    @Indexed(unique = true,background = true)
     private String fieldName;
 }
+
