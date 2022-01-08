@@ -13,4 +13,5 @@ public interface UserRepo extends MongoRepository<User,String> {
     User findUserByMobileNumberAndUserName(String mobileNumber,String userName);
     User findUserByMobileNumberAndNoOfMembersIsGreaterThan(String mobileNumber,Long num);
     User findUserByMobileNumberAndNoOfMembersIsNotNull(String mobileNumber);
+    User findUserBy_id(String id);
 }

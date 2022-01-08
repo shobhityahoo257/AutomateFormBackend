@@ -74,5 +74,11 @@ public class UserService {
            return true;
     }
 
+    public boolean isUserExistById(String id){
+         if(userRepo.findUserBy_id(id)==null)
+             return false;
+         return true;
+    }
+
 
 }

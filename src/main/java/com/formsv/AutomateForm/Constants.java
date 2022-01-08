@@ -1,10 +1,12 @@
 package com.formsv.AutomateForm;
 
-public enum Constants {
+public enum
+Constants {
 
     SOMEERROROCCURRED("Some Error Occurred"),
     DATAALREADYEXIST("Data Already Exist"),
-    CREATED("Data Created");
+    CREATED("Data Created"),
+    USERNOTFOUND("User Not Found");
 
 
 
