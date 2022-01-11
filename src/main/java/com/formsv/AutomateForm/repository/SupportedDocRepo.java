@@ -1,7 +1,6 @@
 package com.formsv.AutomateForm.repository;
 
-import com.formsv.AutomateForm.model.form.user.SupportedDoc;
-import com.formsv.AutomateForm.model.form.user.SupportedFields;
+import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

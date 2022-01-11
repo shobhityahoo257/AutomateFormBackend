@@ -1,4 +1,4 @@
-package com.formsv.AutomateForm.model.form.user;
+package com.formsv.AutomateForm.model.supportedFields;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

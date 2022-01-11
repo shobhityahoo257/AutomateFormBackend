@@ -1,8 +1,8 @@
-package com.formsv.AutomateForm.service;
+package com.formsv.AutomateForm.service.user;
 
 
-import com.formsv.AutomateForm.model.form.user.User;
-import com.formsv.AutomateForm.repository.UserRepo;
+import com.formsv.AutomateForm.model.user.User;
+import com.formsv.AutomateForm.repository.user.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

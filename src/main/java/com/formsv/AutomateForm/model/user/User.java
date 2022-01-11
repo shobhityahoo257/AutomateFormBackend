@@ -1,4 +1,4 @@
-package com.formsv.AutomateForm.model.form.user;
+package com.formsv.AutomateForm.model.user;
 
 
 import lombok.*;
