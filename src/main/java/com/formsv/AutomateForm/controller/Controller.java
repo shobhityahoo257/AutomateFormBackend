@@ -3,10 +3,10 @@ package com.formsv.AutomateForm.controller;
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.AppliedForm;
 import com.formsv.AutomateForm.model.form.Form;
+import com.formsv.AutomateForm.model.form.FormIdsPojo;
 import com.formsv.AutomateForm.model.image.Image;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
-import com.formsv.AutomateForm.model.user.MultipleUserData;
 import com.formsv.AutomateForm.model.user.User;
 import com.formsv.AutomateForm.model.user.UserData;
 import com.formsv.AutomateForm.service.*;
@@ -24,9 +24,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -91,15 +91,18 @@ public class Controller {
     }
 
 
+     @PostMapping("/addRequiredDocuments/{formId}")
+     public ResponseEntity addRequiredDocuments(@PathVariable("formId") String formId,@RequestBody FormIdsPojo rdoc) throws Exception {
+        return supportedDocService.addSupportedDocumentforForm(formId,rdoc.getIds());
+     }
 
 
-
-    @GetMapping("/getRequiredDocuments/{userId}/{formId}")
-    public ResponseEntity getRequiredDocumentsOfUserForParticularForm(@PathVariable ("userId") String userId,@PathVariable ("formId") String formId )
-    {
-
-        return null;
-    }
+//    @GetMapping("/getRequiredDocuments/{formId}")
+//    public ResponseEntity getRequiredDocumentsOfUserForParticularForm(, @PathVariable ("formId") String formId )
+//    {
+//        supportedDocService.isExists(rdoc.getIds());
+//        return null;
+//    }
 
 
 
@@ -173,12 +176,13 @@ public class Controller {
     }
 
 
-    @PostMapping("/photos/add")
-    public ResponseEntity addPhoto(@PathVariable String userId,
-                           @RequestParam("image") MultipartFile image,@PathVariable String documentId)
+    @PostMapping("/uploadDoc/{userId}")
+    public ResponseEntity addPhoto(@PathVariable("userId") String userId,
+                           @RequestParam("image") Map<String,MultipartFile> images)
             throws Exception {
-        String id = imageService.addPhoto(userId,documentId,image);
-        return new ResponseEntity(id,HttpStatus.CREATED);
+        //String id = imageService.addPhoto(userId,documentId,image);
+       // return new ResponseEntity(id,HttpStatus.CREATED);
+        return null;
     }
 
 

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -49,5 +50,12 @@ public class FormService {
         {
             return new ResponseEntity("Form Already Exist With Same Name",HttpStatus.FOUND);
         }
+    }
+
+    public boolean isFormExist(String id){
+        Optional<Form> l=formRepo.findById(id);
+        if(!l.isPresent())
+            return false;
+        return true;
     }
 }

@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor
 @Getter
 @Setter
-@Document(collation = "supportedFields")
+@Document(collection = "supportedFields")
 public class
 SupportedFields {
     @Id

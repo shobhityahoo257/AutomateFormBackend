@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Getter
 @Setter
-@Document(collation = "userDocument")
+@Document(collection = "userDocument")
 @CompoundIndexes({
         @CompoundIndex(name = "userId_documentId", def = "{'userId' : 1, 'documentId': 1}")
 })
