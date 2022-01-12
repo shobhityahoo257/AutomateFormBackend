@@ -14,7 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Getter
 @Setter
-@Document(collation = "appliedForm")
+@Document(collection = "appliedForm")
 @CompoundIndexes({
         @CompoundIndex(name = "formId_userId", def = "{'formId' : 1, 'userId': 1}")
 })

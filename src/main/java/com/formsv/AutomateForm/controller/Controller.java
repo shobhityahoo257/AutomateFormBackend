@@ -2,6 +2,7 @@ package com.formsv.AutomateForm.controller;
 
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.AppliedForm;
+import com.formsv.AutomateForm.model.form.Form;
 import com.formsv.AutomateForm.model.image.Image;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
@@ -10,9 +11,12 @@ import com.formsv.AutomateForm.model.user.User;
 import com.formsv.AutomateForm.model.user.UserData;
 import com.formsv.AutomateForm.service.*;
 import com.formsv.AutomateForm.service.form.AppliedFormService;
+import com.formsv.AutomateForm.service.form.FormService;
 import com.formsv.AutomateForm.service.image.ImageService;
 import com.formsv.AutomateForm.service.user.UserDataService;
 import com.formsv.AutomateForm.service.user.UserService;
+import org.bson.BsonBinarySubType;
+import org.bson.types.Binary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,6 +41,8 @@ public class Controller {
     AppliedFormService appliedFormService;
     @Autowired
     ImageService imageService;
+    @Autowired
+    FormService formService;
 
 
     @GetMapping("/")
@@ -45,15 +51,56 @@ public class Controller {
     }
 
 
-    //In case of parent call we will have username as null
-    @PostMapping("/createUser")
-    public ResponseEntity createUser(@RequestBody(required = true) User user) {
-        try {
-            return userService.createUser(user);
-        } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @GetMapping("getFamily/{mobileNumber}")
+    public ResponseEntity getFamily(@PathVariable("mobileNumber") String mobileNumber) throws Exception {
+        return userService.getFamily(mobileNumber);
     }
+
+    @PostMapping("/createUser/{userName}/{mobileNumber}")
+    public ResponseEntity createUser(@PathVariable("userName") String userName,@PathVariable("mobileNumber") String mobileNumber,@RequestParam("profileImage") MultipartFile profileImage ) throws Exception {
+        User user=new User();
+        user.setParent(true);
+        user.setUserName(userName);
+        user.setMobileNumber(mobileNumber);
+        user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
+        return userService.createUser(user);
+    }
+
+    @PostMapping("/addNewMember/{userName}/{mobileNumber}")
+    public ResponseEntity addMember(@PathVariable("userName") String userName,@PathVariable("mobileNumber") String mobileNumber,@RequestParam("profileImage") MultipartFile profileImage ) throws Exception {
+        User user=new User();
+        user.setUserName(userName);
+        user.setMobileNumber(mobileNumber);
+        user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
+        return userService.addNewMember(user);
+    }
+
+    @PostMapping("/createForm")
+    public ResponseEntity createForm(Form f) throws Exception {
+        return formService.createForm(f);
+    }
+
+    @GetMapping("/getAllForms/{userId}")
+    public ResponseEntity getAllFormsOfUser(@RequestParam String useId) throws Exception {
+        return formService.getAllFormsOfUser(useId);
+    }
+
+    @GetMapping("/getRequiredDocuments/{userId}/{formId}")
+    public ResponseEntity getRequiredDocumentsOfUserForParticularForm(@PathVariable ("userId") String userId,@PathVariable ("formId") String formId )
+    {
+
+        return null;
+    }
+
+
+
+
+
+
+
+
+
+
 
     @PostMapping("/createSupportedFields")
     public ResponseEntity createSupportedFields(@RequestBody(required = true) List<SupportedFields> list) {
@@ -73,14 +120,14 @@ public class Controller {
         }
     }
 
-    @PostMapping("/createUserData")
-    public ResponseEntity createMultipleUserData(@RequestBody MultipleUserData userData) {
-        try {
-            return userDataService.createMultipleUserdata(userData);
-        } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @PostMapping("/createUserData")
+//    public ResponseEntity createMultipleUserData(@RequestBody MultipleUserData userData) {
+//        try {
+//            return userDataService.createMultipleUserdata(userData);
+//        } catch (Exception e) {
+//            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     @PutMapping("/updateUserData")
     public ResponseEntity updateUserData(@RequestBody UserData userData) {
@@ -101,6 +148,9 @@ public class Controller {
         }
     }
 
+    /*
+    It will Be used by employee
+     */
     @PostMapping("/completeForm")
     public ResponseEntity completeForm(@RequestParam String userId,String formId){
         try {
@@ -130,9 +180,10 @@ public class Controller {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo.getImage().getData());
     }
 
-    @GetMapping("/getAllForms")
-    public void getAllForms(@RequestParam(required = false,name = "userId") String useId ){
 
-    }
+
+
+
+
 
 }
