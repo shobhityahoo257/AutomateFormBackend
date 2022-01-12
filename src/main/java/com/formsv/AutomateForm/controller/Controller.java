@@ -23,6 +23,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 
@@ -76,14 +79,20 @@ public class Controller {
     }
 
     @PostMapping("/createForm")
-    public ResponseEntity createForm(Form f) throws Exception {
+    public ResponseEntity createForm(@RequestBody Form f) throws Exception {
+        f.setCreatedAt(new Date());
+        f.setModifiedAt(new Date());
         return formService.createForm(f);
     }
 
     @GetMapping("/getAllForms/{userId}")
-    public ResponseEntity getAllFormsOfUser(@RequestParam String useId) throws Exception {
+    public ResponseEntity getAllFormsOfUser(@PathVariable("userId") String useId) throws Exception {
         return formService.getAllFormsOfUser(useId);
     }
+
+
+
+
 
     @GetMapping("/getRequiredDocuments/{userId}/{formId}")
     public ResponseEntity getRequiredDocumentsOfUserForParticularForm(@PathVariable ("userId") String userId,@PathVariable ("formId") String formId )
@@ -138,8 +147,11 @@ public class Controller {
         }
     }
 
-    @PostMapping("/submitForm")
-    public ResponseEntity applyForm(@RequestBody AppliedForm appliedForm) {
+    @PostMapping("/submitForm/{userId}/{formId}")
+    public ResponseEntity applyForm(@PathVariable("formId") String formid,@PathVariable("userId") String userId) {
+        AppliedForm appliedForm=new AppliedForm();
+        appliedForm.setFormId(formid);
+        appliedForm.setUserId(userId);
         try {
             return appliedFormService.create(appliedForm);
         }

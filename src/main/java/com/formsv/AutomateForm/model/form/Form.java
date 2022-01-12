@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDate;
 import java.util.Date;
 
+@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
@@ -17,21 +18,23 @@ import java.util.Date;
 public class Form {
     @Id
     private String _id;
-    @NonNull
     @Indexed(unique = true)
     private String formName;
     private String searchTags;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @NonNull
     private LocalDate applicationBeginDate;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @NonNull
     private LocalDate lastDate;
     @NonNull()
-    private Long formFee;
+    private Integer formFee;
     @NonNull
-    private Long fillingCharge;
+    private Integer fillingCharge;
     @NonNull
     private boolean enabled;
     private boolean isUserApplied;
     private String formLink;
 
+    private Date createdAt;
+
+    private Date modifiedAt;
 }

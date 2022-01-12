@@ -1,9 +1,6 @@
 package com.formsv.AutomateForm.model.form;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
@@ -11,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
+@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
@@ -25,8 +23,7 @@ public class AppliedForm {
     private String userId;
     private Date createAt;
     private Date modifiedAt;
-    @Builder.Default
-    private Status status=Status.PENDING;
+    private Status status;
 
     public enum Status{
         PENDING,COMPLETED
