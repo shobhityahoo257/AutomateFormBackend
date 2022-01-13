@@ -21,8 +21,9 @@ public class FormRequiredDocument {
     private String documentId;
     private String documentName;
 
-    public FormRequiredDocument(String formId, String documentId){
+    public FormRequiredDocument(String formId, String documentId,String documentName){
            this.formId=formId;
            this.documentId=documentId;
+           this.documentName=documentName;
     }
 }

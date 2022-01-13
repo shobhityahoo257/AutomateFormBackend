@@ -106,18 +106,18 @@ public class UserService {
 
     public ResponseEntity getRequiredDocument(String userId,String formId){
         List<FormRequiredDocument> reqdoc=formRequiredDocumentRepo.findByFormId(formId);
-        List<UserDocuments> doc=userDocumentsRepo.findByUserId(userId);
+        List<UserDocuments> userDoc=userDocumentsRepo.findByUserId(userId);
         RequiredDocumentResponse requiredDocumentResponse=new RequiredDocumentResponse();
         Set<String>  set=new HashSet<>();
-        for (UserDocuments document:doc) {
+        for (UserDocuments document:userDoc) {
                     set.add(document.getDocumentId());
         }
         for (FormRequiredDocument f:reqdoc) {
             RequiredDocumentResponse.Document docu=new RequiredDocumentResponse.Document();
             docu.setDocumentId(f.getDocumentId());
+            docu.setDocumentName(f.getDocumentName());
             if(set.contains(f.getDocumentId())){
                 docu.setUploadedByUser(true);
-                //docu.setDocumentName();
             }
             requiredDocumentResponse.getDoc().add(docu);
         }

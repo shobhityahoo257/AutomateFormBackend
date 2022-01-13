@@ -1,6 +1,7 @@
 package com.formsv.AutomateForm.service;
 
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
+import com.formsv.AutomateForm.model.form.FormIdsPojo;
 import com.formsv.AutomateForm.model.form.FormRequiredDocument;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.repository.SupportedDocRepo;
@@ -42,14 +43,19 @@ public class SupportedDocService {
          return false;
     }
 
-    public ResponseEntity addSupportedDocumentforForm(String formId,List<String> ids) throws  Exception{
+    public ResponseEntity addSupportedDocumentforForm(String formId, FormIdsPojo rdoc) throws  Exception{
+        List<String> ids=new ArrayList<>();
+        for (FormIdsPojo.SupportedDocument doc:rdoc.getList()) {
+            ids.add(doc.getDocumentId());
+        }
+
         List<FormRequiredDocument> formRequiredDocument=new ArrayList<>();
         //Validate if Form Exist
           if(!formService.isFormExist(formId) )
               return new ResponseEntity("Form Doesn't Exist",HttpStatus.BAD_REQUEST);
             if(isAllDocumentExists(ids)) {
-                for (String id : ids) {
-                    formRequiredDocument.add(new FormRequiredDocument(formId, id));
+                for (int i=0;i<ids.size();i++) {
+                    formRequiredDocument.add(new FormRequiredDocument(formId, ids.get(i),rdoc.getList().get(i).getDocumentName()));
                 }
                 try {
                     return new ResponseEntity(formRequiredDocumentRepo.saveAll(formRequiredDocument), HttpStatus.CREATED);
