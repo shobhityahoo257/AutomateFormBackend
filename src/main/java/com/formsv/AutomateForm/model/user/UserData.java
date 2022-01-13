@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Getter
 @Setter
-@Document(collation = "userData")
+@Document(collection = "userData")
 @CompoundIndexes({
         @CompoundIndex(name = "userName_mobileNumber", def = "{'userId' : 1, 'fieldId': 1}")
 })

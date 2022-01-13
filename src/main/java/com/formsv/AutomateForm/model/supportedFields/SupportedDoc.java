@@ -10,7 +10,7 @@ import org.springframework.data.annotation.Id;
 @AllArgsConstructor
 @Getter
 @Setter
-@Document(collation = "supportedDoc")
+@Document(collection = "supportedDoc")
 public class SupportedDoc {
     @Id
     private String _id;

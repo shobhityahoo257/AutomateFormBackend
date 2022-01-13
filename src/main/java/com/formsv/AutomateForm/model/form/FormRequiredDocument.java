@@ -1,11 +1,9 @@
-package com.formsv.AutomateForm.model.user;
-
+package com.formsv.AutomateForm.model.form;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.bson.types.Binary;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
@@ -15,15 +13,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Getter
 @Setter
-@Document(collection = "userDocument")
-@CompoundIndexes({
-        @CompoundIndex(name = "userId_documentId", def = "{'userId' : 1, 'documentId': 1}")
-})
-public class UserDocuments {
+@Document(collection = "requiredDocument")
+public class FormRequiredDocument {
     @Id
     private String _id;
-    private String userId;
+    private String formId;
     private String documentId;
-    private Binary image;
     private String documentName;
+
+    public FormRequiredDocument(String formId, String documentId,String documentName){
+           this.formId=formId;
+           this.documentId=documentId;
+           this.documentName=documentName;
+    }
 }

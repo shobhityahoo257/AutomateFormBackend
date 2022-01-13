@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Service
 public class AppliedFormService
 {
@@ -28,6 +30,9 @@ public class AppliedFormService
 
     public ResponseEntity create(AppliedForm appliedForm) {
         try {
+            appliedForm.setStatus(AppliedForm.Status.PENDING);
+            appliedForm.setCreateAt(new Date());
+            appliedForm.setModifiedAt(new Date());
             return new ResponseEntity(appliedFormRepo.save(appliedForm), HttpStatus.CREATED);
         } catch (DuplicateKeyException e) {
             return new ResponseEntity(ExceptionConstants.DATAALREADYEXIST.value, HttpStatus.BAD_REQUEST);
