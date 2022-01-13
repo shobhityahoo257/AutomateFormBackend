@@ -224,6 +224,12 @@ This is used to add Required Documents for a form
      }
 
 
+     @GetMapping("/getAllForms")
+    public ResponseEntity getAllForms()throws Exception{
+       return formService.getAllForms();
+     }
+
+
 
 
 
