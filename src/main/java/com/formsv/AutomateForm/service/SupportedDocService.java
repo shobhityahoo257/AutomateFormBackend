@@ -67,4 +67,8 @@ public class SupportedDocService {
              return false;
          return true;
     }
+
+    public SupportedDoc getById(String id){
+        return supportedDocRepo.findBy_id(id);
+    }
 }

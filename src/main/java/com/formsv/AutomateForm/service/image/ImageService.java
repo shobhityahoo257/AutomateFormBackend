@@ -1,6 +1,7 @@
 package com.formsv.AutomateForm.service.image;
 
 import com.formsv.AutomateForm.model.image.Image;
+import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.user.UserDocuments;
 import com.formsv.AutomateForm.repository.image.ImageRepo;
 import com.formsv.AutomateForm.repository.user.UserDataRepo;
@@ -33,10 +34,12 @@ public class ImageService {
     public ResponseEntity addPhoto(String userId, String documentId, MultipartFile file) throws Exception {
            if( !userService.isUserExistById(userId))
                return new ResponseEntity("User Doesn't Exist with given userId",HttpStatus.BAD_REQUEST);
-           if(!supportedDocService.isDocumentExistById(documentId))
+        SupportedDoc supportedDoc=supportedDocService.getById(documentId);
+           if(supportedDoc==null)
                return new ResponseEntity("Document Doesn't Exist with given documentId",HttpStatus.BAD_REQUEST);
             UserDocuments doc = new UserDocuments();
             doc.setDocumentId(documentId);
+            doc.setDocumentName(supportedDoc.getDocName());
             doc.setImage( new Binary(BsonBinarySubType.BINARY, file.getBytes()));
             doc.setUserId(userId);
             try {
