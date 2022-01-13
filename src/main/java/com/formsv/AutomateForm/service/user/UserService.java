@@ -10,6 +10,7 @@ import com.formsv.AutomateForm.repository.user.UserRepo;
 import com.formsv.AutomateForm.responseModel.FamilyResponse;
 import com.formsv.AutomateForm.responseModel.RequiredDocumentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,43 +30,14 @@ public class UserService {
     UserDocumentsRepo userDocumentsRepo;
 
     public ResponseEntity createUser(User user) throws Exception {
+         if(isUserExistByMobileNumber(user.getMobileNumber()))
+             return new ResponseEntity("User is already Exist with Given Mobile Number", HttpStatus.BAD_REQUEST);
         user.setParent(true);
-        return  new ResponseEntity(userRepo.save(user),HttpStatus.CREATED);
-    }
-
-
-    public boolean isParentExist(User user)
-    {
-    //   if( userRepo.findUserByMobileNumberAndNoOfMembersIsNotNull(user.getMobileNumber())==null)
-     //      return false;
-       return true;
-    }
-
-    public boolean isChildExist(User user){
-        if( userRepo.findUserByMobileNumberAndUserName(user.getMobileNumber(),user.getUserName())==null)
-            return false;
-        return true;
-    }
-
-    public ResponseEntity save(User user){
-        String id=userRepo.save(user).get_id();
-        if(id==null)
-           new ResponseEntity("SomeError Occurred",HttpStatus.INTERNAL_SERVER_ERROR);
-        else
-             new ResponseEntity(id,HttpStatus.CREATED);
-        return new ResponseEntity("SomeError Occurred",HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity(userRepo.save(user), HttpStatus.CREATED);
 
     }
 
-    public boolean addChild(User user){
-//          User parent = userRepo.findUserByMobileNumberAndNoOfMembersIsNotNull(user.getMobileNumber());
-//      // parent.setNoOfMembers(parent.getNoOfMembers()+1);
-//       String id=userRepo.save(parent).get_id();
-//       if(id==null)
-//           return false;
-//       else
-          return true;
-    }
+
 
     public boolean isUserExistById(String id){
          if(userRepo.findUserBy_id(id)==null)
