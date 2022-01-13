@@ -9,6 +9,7 @@ import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.repository.user.UserRepo;
 import com.formsv.AutomateForm.responseModel.FamilyResponse;
 import com.formsv.AutomateForm.responseModel.RequiredDocumentResponse;
+import com.formsv.AutomateForm.responseModel.employeeResponseModel.AllUserData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -117,7 +118,9 @@ public class UserService {
         for (User user:userList) {
             user.setProfileImage(null);
         }
-        return new ResponseEntity(userList,HttpStatus.OK);
+        AllUserData allUserData=new AllUserData();
+        allUserData.setData(userList);
+        return new ResponseEntity(allUserData,HttpStatus.OK);
     }
 
 }
