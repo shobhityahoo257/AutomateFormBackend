@@ -70,10 +70,16 @@ public class UserService {
     public ResponseEntity addNewMember(User user) throws Exception {
         if(isUserExistByMobileNumber(user.getMobileNumber()))
         {
-            return new ResponseEntity(userRepo.save(user),HttpStatus.CREATED);
+            try {
+                return new ResponseEntity(userRepo.save(user), HttpStatus.CREATED);
+            }catch (DuplicateKeyException e)
+            {
+                return new ResponseEntity("Please choose Another UserName", HttpStatus.BAD_REQUEST);
+            }
         }
-        else
-            return new ResponseEntity("No User Exist",HttpStatus.BAD_REQUEST);
+        else {
+            return new ResponseEntity("No User Exist", HttpStatus.BAD_REQUEST);
+        }
     }
 
     public ResponseEntity getRequiredDocument(String userId,String formId){
