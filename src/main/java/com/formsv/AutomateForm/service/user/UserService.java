@@ -8,12 +8,15 @@ import com.formsv.AutomateForm.repository.form.FormRequiredDocumentRepo;
 import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.repository.user.UserRepo;
 import com.formsv.AutomateForm.responseModel.FamilyResponse;
+import com.formsv.AutomateForm.responseModel.RequiredDocumentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -104,8 +107,22 @@ public class UserService {
     public ResponseEntity getRequiredDocument(String userId,String formId){
         List<FormRequiredDocument> reqdoc=formRequiredDocumentRepo.findByFormId(formId);
         List<UserDocuments> doc=userDocumentsRepo.findByUserId(userId);
+        RequiredDocumentResponse requiredDocumentResponse=new RequiredDocumentResponse();
+        Set<String>  set=new HashSet<>();
+        for (UserDocuments document:doc) {
+                    set.add(document.getDocumentId());
+        }
+        for (FormRequiredDocument f:reqdoc) {
+            RequiredDocumentResponse.Document docu=new RequiredDocumentResponse.Document();
+            docu.setDocumentId(f.getDocumentId());
+            if(set.contains(f.getDocumentId())){
+                docu.setUploadedByUser(true);
+                //docu.setDocumentName();
+            }
+            requiredDocumentResponse.getDoc().add(docu);
+        }
 
-        return  null;
+         return new ResponseEntity(requiredDocumentResponse,HttpStatus.OK);
     }
 
 }

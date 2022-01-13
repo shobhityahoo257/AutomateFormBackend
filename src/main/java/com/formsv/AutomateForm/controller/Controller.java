@@ -191,7 +191,7 @@ This is used to add Required Documents for a form
 
     @GetMapping("/getRequiredDocument/{userId}/{formId}")
     public ResponseEntity getRequiredDocument(@PathVariable("userId") String userId,@PathVariable("formId") String formId){
- return null;
+        return userService.getRequiredDocument(userId,formId);
     }
 
 

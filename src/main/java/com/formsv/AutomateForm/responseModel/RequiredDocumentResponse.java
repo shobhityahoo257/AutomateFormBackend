@@ -21,7 +21,7 @@ public class RequiredDocumentResponse {
     @Getter
     @Setter
     @NoArgsConstructor
-    class Document{
+    public static class Document{
         private String documentId;
         private String documentName;
         private boolean uploadedByUser;
