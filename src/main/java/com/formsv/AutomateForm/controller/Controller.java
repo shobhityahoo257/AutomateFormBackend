@@ -89,7 +89,9 @@ public class Controller {
     public ResponseEntity getAllFormsOfUser(@PathVariable("userId") String useId) throws Exception {
         return formService.getAllFormsOfUser(useId);
     }
-
+/*
+This is used to add Required Documents for a form
+ */
 
      @PostMapping("/addRequiredDocuments/{formId}")
      public ResponseEntity addRequiredDocuments(@PathVariable("formId") String formId,@RequestBody FormIdsPojo rdoc) throws Exception {
@@ -175,15 +177,33 @@ public class Controller {
         }
     }
 
+    /*
+      This is used to upload single document of user
+     */
 
-    @PostMapping("/uploadDoc/{userId}")
-    public ResponseEntity addPhoto(@PathVariable("userId") String userId,
-                           @RequestParam("image") Map<String,MultipartFile> images)
+    @PostMapping("/uploadSingleImage/{userId}/{documentId}")
+    public ResponseEntity addDocuments(@PathVariable("userId") String userId,
+                           @RequestParam("document") MultipartFile document,@PathVariable("documentId") String documentId)
             throws Exception {
-        //String id = imageService.addPhoto(userId,documentId,image);
-       // return new ResponseEntity(id,HttpStatus.CREATED);
-        return null;
+        return imageService.addPhoto(userId,documentId,document);
     }
+
+
+    @GetMapping("/getRequiredDocument/{userId}/{formId}")
+    public ResponseEntity getRequiredDocument(@PathVariable("userId") String userId,@PathVariable("formId") String formId){
+ return null;
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
     @GetMapping("/photos/{id}")

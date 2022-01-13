@@ -1,7 +1,11 @@
 package com.formsv.AutomateForm.service.user;
 
 
+import com.formsv.AutomateForm.model.form.FormRequiredDocument;
 import com.formsv.AutomateForm.model.user.User;
+import com.formsv.AutomateForm.model.user.UserDocuments;
+import com.formsv.AutomateForm.repository.form.FormRequiredDocumentRepo;
+import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.repository.user.UserRepo;
 import com.formsv.AutomateForm.responseModel.FamilyResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,10 @@ public class UserService {
 
     @Autowired
     UserRepo userRepo;
+    @Autowired
+    FormRequiredDocumentRepo formRequiredDocumentRepo;
+    @Autowired
+    UserDocumentsRepo userDocumentsRepo;
 
     public ResponseEntity createUser(User user) throws Exception {
         user.setParent(true);
@@ -91,6 +99,13 @@ public class UserService {
         }
         else
             return new ResponseEntity("No User Exist",HttpStatus.BAD_REQUEST);
+    }
+
+    public ResponseEntity getRequiredDocument(String userId,String formId){
+        List<FormRequiredDocument> reqdoc=formRequiredDocumentRepo.findByFormId(formId);
+        List<UserDocuments> doc=userDocumentsRepo.findByUserId(userId);
+
+        return  null;
     }
 
 }

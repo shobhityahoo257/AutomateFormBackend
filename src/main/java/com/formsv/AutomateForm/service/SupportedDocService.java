@@ -61,4 +61,10 @@ public class SupportedDocService {
             else
                 return new ResponseEntity("One Of the Document is not Supported",HttpStatus.BAD_REQUEST);
     }
+
+    public boolean isDocumentExistById(String id){
+         if( supportedDocRepo.findBy_id(id)==null )
+             return false;
+         return true;
+    }
 }

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface SupportedDocRepo extends MongoRepository<SupportedDoc,String> {
   List<SupportedDoc> findAllBy_idIsIn(List<String> ids);
+  SupportedDoc findBy_id(String id);
 }
