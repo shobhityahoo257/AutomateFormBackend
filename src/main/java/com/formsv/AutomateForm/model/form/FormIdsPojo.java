@@ -10,9 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class FormIdsPojo {
-     private List<String> ids;
      List<SupportedDocument> list;
-
      @Data
      @NoArgsConstructor
      @AllArgsConstructor
