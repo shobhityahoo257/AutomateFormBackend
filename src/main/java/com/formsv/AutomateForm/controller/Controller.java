@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -67,6 +68,8 @@ public class Controller {
         user.setUserName(userName);
         user.setMobileNumber(mobileNumber);
         user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
+        user.setCreatedAt(new Date());
+        user.setModifiedAt(user.getCreatedAt());
         return userService.createUser(user);
     }
 
@@ -212,6 +215,19 @@ This is used to add Required Documents for a form
        // return new ResponseEntity(,HttpStatus.OK);// new ResponseEntity;
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo.getImage().getData());
     }
+
+
+
+     @GetMapping("/getAllUsers")
+    public ResponseEntity getAllUser() throws Exception {
+           return userService.getAllUser();
+     }
+
+
+
+
+
+
 
 
 
