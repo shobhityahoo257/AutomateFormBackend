@@ -8,6 +8,9 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -24,5 +27,24 @@ public class User {
     @NonNull
     private String userName;
     private Binary profileImage;
-    private boolean isParent;
+    private boolean parent;
+    private boolean lock;
+    private Date createdAt;
+    private Date modifiedAt;
+
+    public boolean isParent() {
+        return parent;
+    }
+
+    public void setParent(boolean parent) {
+        this.parent = parent;
+    }
+
+    public boolean isLock() {
+        return lock;
+    }
+
+    public void setLock(boolean lock) {
+        this.lock = lock;
+    }
 }

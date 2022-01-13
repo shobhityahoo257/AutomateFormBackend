@@ -104,4 +104,20 @@ public class UserService {
          return new ResponseEntity(requiredDocumentResponse,HttpStatus.OK);
     }
 
+    public boolean isLocked(String userId){
+        if(userRepo.findUserBy_id(userId).isLock())
+            return true;
+        return false;
+
+    }
+
+
+    public ResponseEntity getAllUser() throws Exception{
+        List<User> userList=userRepo.findAll();
+        for (User user:userList) {
+            user.setProfileImage(null);
+        }
+        return new ResponseEntity(userList,HttpStatus.OK);
+    }
+
 }

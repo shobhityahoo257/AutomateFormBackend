@@ -6,6 +6,7 @@ import com.formsv.AutomateForm.model.form.Form;
 import com.formsv.AutomateForm.repository.form.AppliedFormRepo;
 import com.formsv.AutomateForm.repository.form.FormRepo;
 import com.formsv.AutomateForm.responseModel.UserFormResponse;
+import com.formsv.AutomateForm.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,22 @@ public class FormService {
     FormRepo formRepo;
     @Autowired
     AppliedFormRepo appliedFormRepo;
+    @Autowired
+    UserService userService;
+
+    /**
+     * This Returns all forms currently enabled from Our Database Forms have the flag userApplied which shows if User has Applied form or not
+     * @param userId
+     * @return
+     * @throws Exception
+     */
     public ResponseEntity getAllFormsOfUser(String userId) throws Exception{
-        List<Form> formList=formRepo.findAll();
+        if(!userService.isUserExistById(userId))
+            return new ResponseEntity("No User Exist",HttpStatus.BAD_REQUEST);
+
+        //Here FormList size is not more than 1000. So not much concern about complexity
+        List<Form> formList=formRepo.findByEnabled(true);
+
         List<AppliedForm> appliedForms=appliedFormRepo.findAllByUserId(userId);
 
         Set<String> set = new HashSet<String >();
