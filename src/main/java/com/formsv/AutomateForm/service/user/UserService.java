@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -85,7 +86,7 @@ public class UserService {
     public ResponseEntity getRequiredDocument(String userId,String formId){
         List<FormRequiredDocument> reqdoc=formRequiredDocumentRepo.findByFormId(formId);
         List<UserDocuments> userDoc=userDocumentsRepo.findByUserId(userId);
-        RequiredDocumentResponse requiredDocumentResponse=new RequiredDocumentResponse();
+        List<RequiredDocumentResponse.Document> list=new ArrayList<>();
         Set<String>  set=new HashSet<>();
         for (UserDocuments document:userDoc) {
                     set.add(document.getDocumentId());
@@ -97,9 +98,9 @@ public class UserService {
             if(set.contains(f.getDocumentId())){
                 docu.setUploadedByUser(true);
             }
-            requiredDocumentResponse.getDoc().add(docu);
+          list.add(docu);
         }
-
+        RequiredDocumentResponse requiredDocumentResponse=new RequiredDocumentResponse(userId,formId,list);
          return new ResponseEntity(requiredDocumentResponse,HttpStatus.OK);
     }
 

@@ -155,16 +155,11 @@ This is used to add Required Documents for a form
     }
 
     @PostMapping("/submitForm/{userId}/{formId}")
-    public ResponseEntity applyForm(@PathVariable("formId") String formid,@PathVariable("userId") String userId) {
-        AppliedForm appliedForm=new AppliedForm();
+    public ResponseEntity applyForm(@PathVariable("formId") String formid,@PathVariable("userId") String userId) throws Exception {
+        AppliedForm appliedForm = new AppliedForm();
         appliedForm.setFormId(formid);
         appliedForm.setUserId(userId);
-        try {
-            return appliedFormService.create(appliedForm);
-        }
-        catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return appliedFormService.create(appliedForm);
     }
 
     /*
