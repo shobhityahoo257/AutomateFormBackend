@@ -29,8 +29,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-
-@RestController
+@CrossOrigin(origins = "*")
+@RestController()
 public class Controller {
 
     @Autowired
