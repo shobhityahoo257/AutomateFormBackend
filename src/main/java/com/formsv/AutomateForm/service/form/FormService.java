@@ -6,6 +6,7 @@ import com.formsv.AutomateForm.model.form.Form;
 import com.formsv.AutomateForm.repository.form.AppliedFormRepo;
 import com.formsv.AutomateForm.repository.form.FormRepo;
 import com.formsv.AutomateForm.responseModel.UserFormResponse;
+import com.formsv.AutomateForm.responseModel.employeeResponseModel.AllFormData;
 import com.formsv.AutomateForm.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -72,5 +73,11 @@ public class FormService {
         if(!l.isPresent())
             return false;
         return true;
+    }
+
+    public ResponseEntity getAllForms() throws Exception{
+        List<Form> formList=formRepo.findAll();
+        AllFormData allFormData=new AllFormData(formList);
+        return new ResponseEntity(allFormData,HttpStatus.OK);
     }
 }
