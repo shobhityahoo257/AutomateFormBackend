@@ -15,4 +15,5 @@ public class MultipleUserData {
     private String userId;
     @NonNull
     private List<UserData> userDataList;
+
 }

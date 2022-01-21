@@ -40,7 +40,7 @@ public class ImageService {
             UserDocuments doc = new UserDocuments();
             doc.setDocumentId(documentId);
             doc.setDocumentName(supportedDoc.getDocName());
-            doc.setImage( new Binary(BsonBinarySubType.BINARY, file.getBytes()));
+            doc.setImage( file.getBytes());
             doc.setUserId(userId);
             try {
                 return new ResponseEntity(userDocumentsRepo.save(doc), HttpStatus.CREATED);

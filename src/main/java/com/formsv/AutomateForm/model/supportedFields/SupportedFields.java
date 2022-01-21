@@ -6,20 +6,19 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+
 
 
 @AllArgsConstructor
 @Getter
 @Setter
 @Document(collection = "supportedFields")
-public class
-SupportedFields {
+public class SupportedFields {
     @Id
     private String _id;
-    @Indexed(unique = true,background = true)
+    @NonNull
+    private String documentId;
     private String fieldName;
 }
 

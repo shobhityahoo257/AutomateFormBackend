@@ -9,7 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class SupportedFieldsService {
@@ -32,6 +35,12 @@ public class SupportedFieldsService {
          return false;
      return true;
     }
+
+   public List<SupportedFields> findAllByFieldNameIsIn(List<String > fieldsName){
+       return   supportedFieldsRepo.findAllByFieldNameIsIn(fieldsName);
+   }
+
+
 
 
 

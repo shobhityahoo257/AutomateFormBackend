@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface UserDataRepo extends MongoRepository<UserData,String> {
-   UserData findByUserIdAndFieldId(String userId,String fieldId);
+//   UserData findByUserIdAndFieldId(String userId,String fieldId);
    List<UserData> findAllByUserId(String userId);
+   void deleteAllByUserIdAndAndFieldNameIsIn(String userId,List<String> fieldName );
 }

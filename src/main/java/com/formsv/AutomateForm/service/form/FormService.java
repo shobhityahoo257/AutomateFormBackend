@@ -1,6 +1,8 @@
 package com.formsv.AutomateForm.service.form;
 
 
+import com.formsv.AutomateForm.Constants.Constants;
+import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.AppliedForm;
 import com.formsv.AutomateForm.model.form.Form;
 import com.formsv.AutomateForm.repository.form.AppliedFormRepo;
@@ -26,6 +28,7 @@ public class FormService {
     AppliedFormRepo appliedFormRepo;
     @Autowired
     UserService userService;
+
 
     /**
      * This Returns all forms currently enabled from Our Database Forms have the flag userApplied which shows if User has Applied form or not
@@ -80,4 +83,18 @@ public class FormService {
         AllFormData allFormData=new AllFormData(formList);
         return new ResponseEntity(allFormData,HttpStatus.OK);
     }
+
+    public ResponseEntity updateFormData(String formId,Form form){
+        if(!isFormExist(formId))
+            return new ResponseEntity(ExceptionConstants.FORMNOTEXIST,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(formRepo.save(form),HttpStatus.OK);
+    }
+
+    public ResponseEntity deleteForm(String formId) throws Exception{
+        formRepo.deleteById(formId);
+        userService.deleteAllRequiredDocumentsOfFOrm(formId);
+        return new ResponseEntity(Constants.DELETED,HttpStatus.OK);
+    }
+
+
 }

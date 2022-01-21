@@ -7,8 +7,8 @@ ExceptionConstants {
     DATAALREADYEXIST("Data Already Exist"),
     CREATED("Data Created"),
     USERNOTFOUND("User Not Found"),
-    DATANOTEXIST("Data doesn't Exist");
-
+    DATANOTEXIST("Data doesn't Exist"),
+    FORMNOTEXIST("Form Doesn't Exist");
 
 
     public final String value;

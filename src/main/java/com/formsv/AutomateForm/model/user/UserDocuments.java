@@ -24,6 +24,6 @@ public class UserDocuments {
     private String _id;
     private String userId;
     private String documentId;
-    private Binary image;
+    private byte[] image;
     private String documentName;
 }

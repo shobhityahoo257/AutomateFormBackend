@@ -44,15 +44,21 @@ public class SupportedDocService {
     }
 
     public ResponseEntity addSupportedDocumentforForm(String formId, FormIdsPojo rdoc) throws  Exception{
+        //Validate if Form Exist
+        if(!formService.isFormExist(formId) )
+            return new ResponseEntity("Form Doesn't Exist",HttpStatus.BAD_REQUEST);
+        //Validate if Form Exist
+        if(!formService.isFormExist(formId) )
+            return new ResponseEntity("Form Doesn't Exist",HttpStatus.BAD_REQUEST);
+        formRequiredDocumentRepo.deleteAllByFormId(formId);
+
         List<String> ids=new ArrayList<>();
         for (FormIdsPojo.SupportedDocument doc:rdoc.getList()) {
             ids.add(doc.getDocumentId());
         }
 
         List<FormRequiredDocument> formRequiredDocument=new ArrayList<>();
-        //Validate if Form Exist
-          if(!formService.isFormExist(formId) )
-              return new ResponseEntity("Form Doesn't Exist",HttpStatus.BAD_REQUEST);
+
             if(isAllDocumentExists(ids)) {
                 for (int i=0;i<ids.size();i++) {
                     formRequiredDocument.add(new FormRequiredDocument(formId, ids.get(i),rdoc.getList().get(i).getDocumentName()));
@@ -77,4 +83,7 @@ public class SupportedDocService {
     public SupportedDoc getById(String id){
         return supportedDocRepo.findBy_id(id);
     }
+
+
+
 }
