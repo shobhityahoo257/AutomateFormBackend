@@ -2,16 +2,22 @@ package com.formsv.AutomateForm.service.user;
 
 
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
+import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
 import com.formsv.AutomateForm.model.user.MultipleUserData;
+import com.formsv.AutomateForm.model.user.User;
 import com.formsv.AutomateForm.model.user.UserData;
+import com.formsv.AutomateForm.repository.SupportedFieldsRepo;
 import com.formsv.AutomateForm.repository.user.UserDataRepo;
+import com.formsv.AutomateForm.service.SupportedFieldsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserDataService {
@@ -19,6 +25,10 @@ public class UserDataService {
     UserDataRepo userDataRepo;
     @Autowired
     UserService userService;
+
+
+
+
 
     public ResponseEntity createMultipleUserdata(MultipleUserData userData) {
         if (userService.isUserExistById(userData.getUserId())) {
@@ -38,17 +48,21 @@ public class UserDataService {
         return new ResponseEntity(ExceptionConstants.USERNOTFOUND, HttpStatus.NOT_FOUND);
     }
 
-    public ResponseEntity updateUserData(UserData userData){
-        UserData d= userDataRepo.findByUserIdAndFieldId(userData.getUserId(),userData.getFieldId());
-        if(d==null)
-            return new ResponseEntity(ExceptionConstants.DATANOTEXIST, HttpStatus.BAD_REQUEST);
-        d.setFieldValue(userData.getFieldValue());
-        return new ResponseEntity(userDataRepo.save(d),HttpStatus.OK);
-    }
+//    public ResponseEntity updateUserData(UserData userData){
+//        UserData d= userDataRepo.findByUserIdAndFieldId(userData.getUserId(),userData.getFieldId());
+//        if(d==null)
+//            return new ResponseEntity(ExceptionConstants.DATANOTEXIST, HttpStatus.BAD_REQUEST);
+//        d.setFieldValue(userData.getFieldValue());
+//        return new ResponseEntity(userDataRepo.save(d),HttpStatus.OK);
+//        }
 
 
     public void getUserAllData(String id){
            userDataRepo.findAllByUserId(id);
     }
+
+
+
+
 
 }

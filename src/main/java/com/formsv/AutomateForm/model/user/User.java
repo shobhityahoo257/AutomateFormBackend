@@ -26,7 +26,7 @@ public class User {
     private String mobileNumber;
     @NonNull
     private String userName;
-    private Binary profileImage;
+    private byte[] profileImage;
     private boolean parent;
     private boolean lock;
     private Date createdAt;

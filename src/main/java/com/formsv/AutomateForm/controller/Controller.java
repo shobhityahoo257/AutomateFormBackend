@@ -15,8 +15,10 @@ import com.formsv.AutomateForm.service.form.FormService;
 import com.formsv.AutomateForm.service.image.ImageService;
 import com.formsv.AutomateForm.service.user.UserDataService;
 import com.formsv.AutomateForm.service.user.UserService;
+import com.formsv.AutomateForm.utils.OpenCsvUtil;
 import org.bson.BsonBinarySubType;
 import org.bson.types.Binary;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +26,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,7 +73,8 @@ public class Controller {
         user.setParent(true);
         user.setUserName(userName);
         user.setMobileNumber(mobileNumber);
-        user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
+       // user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
+        user.setProfileImage(profileImage.getBytes());
         user.setCreatedAt(new Date());
         user.setModifiedAt(user.getCreatedAt());
         return userService.createUser(user);
@@ -78,16 +85,11 @@ public class Controller {
         User user=new User();
         user.setUserName(userName);
         user.setMobileNumber(mobileNumber);
-        user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
+        //user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
+         user.setProfileImage(profileImage.getBytes());
         return userService.addNewMember(user);
     }
 
-    @PostMapping("/createForm")
-    public ResponseEntity createForm(@RequestBody Form f) throws Exception {
-        f.setCreatedAt(new Date());
-        f.setModifiedAt(new Date());
-        return formService.createForm(f);
-    }
 
     @GetMapping("/getAllForms/{userId}")
     public ResponseEntity getAllFormsOfUser(@PathVariable("userId") String useId) throws Exception {
@@ -97,21 +99,56 @@ public class Controller {
 This is used to add Required Documents for a form
  */
 
-     @PostMapping("/addRequiredDocuments/{formId}")
-     public ResponseEntity addRequiredDocuments(@PathVariable("formId") String formId,@RequestBody FormIdsPojo rdoc) throws Exception {
-
-        return supportedDocService.addSupportedDocumentforForm(formId,rdoc);
-     }
 
 
-//    @GetMapping("/getRequiredDocuments/{formId}")
-//    public ResponseEntity getRequiredDocumentsOfUserForParticularForm(, @PathVariable ("formId") String formId )
-//    {
-//        supportedDocService.isExists(rdoc.getIds());
-//        return null;
+
+
+
+//    @PostMapping("/createUserData")
+//    public ResponseEntity createMultipleUserData(@RequestBody MultipleUserData userData) {
+//        try {
+//            return userDataService.createMultipleUserdata(userData);
+//        } catch (Exception e) {
+//            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
 //    }
 
 
+    @PostMapping("/submitForm/{userId}/{formId}")
+    public ResponseEntity applyForm(@PathVariable("formId") String formid,@PathVariable("userId") String userId) throws Exception {
+        AppliedForm appliedForm = new AppliedForm();
+        appliedForm.setFormId(formid);
+        appliedForm.setUserId(userId);
+        return appliedFormService.create(appliedForm);
+    }
+
+
+    /*
+      This is used to upload single document of user
+     */
+
+    @PostMapping("/uploadSingleImage/{userId}/{documentId}")
+    public ResponseEntity addDocuments(@PathVariable("userId") String userId,
+                           @RequestParam("document") MultipartFile document,@PathVariable("documentId") String documentId)
+            throws Exception {
+        return imageService.addPhoto(userId,documentId,document);
+    }
+
+
+    @GetMapping("/getRequiredDocument/{userId}/{formId}")
+    public ResponseEntity getRequiredDocument(@PathVariable("userId") String userId,@PathVariable("formId") String formId){
+        return userService.getRequiredDocument(userId,formId);
+    }
+
+    @GetMapping("/photos/{id}")
+    public ResponseEntity getPhoto(@PathVariable String id) {
+        Image photo = imageService.getPhoto(id);
+//        model.addAttribute("title", photo.getTitle());
+//        model.addAttribute("image",
+//                Base64.getEncoder().encodeToString(photo.getImage().getData()));
+       // return new ResponseEntity(,HttpStatus.OK);// new ResponseEntity;
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo.getImage().getData());
+    }
 
 
 
@@ -120,6 +157,63 @@ This is used to add Required Documents for a form
 
 
 
+
+
+
+
+
+
+
+
+
+
+    //Employee side
+
+
+
+
+
+
+     @GetMapping("/getAllUsers")
+    public ResponseEntity getAllUser() throws Exception {
+           return userService.getAllUser();
+     }
+
+
+
+    /**
+     *  this is used to to add or update existing userData
+     * @param userDataList
+     * @param userid
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/storeUserData/{userid}")
+    public ResponseEntity storeUserData(@RequestBody List<UserData> userDataList,@PathVariable("userId") String userid) throws Exception {
+        return userService.addUpdateUserData(userDataList,userid);
+    }
+
+    /*
+    It will Be used by employee
+     */
+    @PostMapping("/completeForm")
+    public ResponseEntity completeForm(@RequestParam String userId,String formId){
+        try {
+            return  appliedFormService.completeForm(userId, formId);
+        }catch (Exception e){
+            return new ResponseEntity(ExceptionConstants.SOMEERROROCCURRED,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+//    @PutMapping("/updateUserData")
+//    public ResponseEntity updateUserData(@RequestBody UserData userData) {
+//        try {
+//            return userDataService.updateUserData(userData);
+//        } catch (Exception e) {
+//            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     @PostMapping("/createSupportedFields")
     public ResponseEntity createSupportedFields(@RequestBody(required = true) List<SupportedFields> list) {
@@ -139,99 +233,80 @@ This is used to add Required Documents for a form
         }
     }
 
-//    @PostMapping("/createUserData")
-//    public ResponseEntity createMultipleUserData(@RequestBody MultipleUserData userData) {
-//        try {
-//            return userDataService.createMultipleUserdata(userData);
-//        } catch (Exception e) {
-//            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
 
-    @PutMapping("/updateUserData")
-    public ResponseEntity updateUserData(@RequestBody UserData userData) {
-        try {
-            return userDataService.updateUserData(userData);
-        } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
-    @PostMapping("/submitForm/{userId}/{formId}")
-    public ResponseEntity applyForm(@PathVariable("formId") String formid,@PathVariable("userId") String userId) throws Exception {
-        AppliedForm appliedForm = new AppliedForm();
-        appliedForm.setFormId(formid);
-        appliedForm.setUserId(userId);
-        return appliedFormService.create(appliedForm);
-    }
-
-    /*
-    It will Be used by employee
-     */
-    @PostMapping("/completeForm")
-    public ResponseEntity completeForm(@RequestParam String userId,String formId){
-        try {
-           return  appliedFormService.completeForm(userId, formId);
-        }catch (Exception e){
-            return new ResponseEntity(ExceptionConstants.SOMEERROROCCURRED,HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /*
-      This is used to upload single document of user
+    /**
+     * CreateForm
+     * @param f
+     * @return
+     * @throws Exception
      */
 
-    @PostMapping("/uploadSingleImage/{userId}/{documentId}")
-    public ResponseEntity addDocuments(@PathVariable("userId") String userId,
-                           @RequestParam("document") MultipartFile document,@PathVariable("documentId") String documentId)
-            throws Exception {
-        return imageService.addPhoto(userId,documentId,document);
+
+    @PostMapping("/createForm")
+    public ResponseEntity createForm(@RequestBody Form f) throws Exception {
+        f.setCreatedAt(new Date());
+        f.setModifiedAt(f.getCreatedAt());
+        return formService.createForm(f);
     }
 
-
-    @GetMapping("/getRequiredDocument/{userId}/{formId}")
-    public ResponseEntity getRequiredDocument(@PathVariable("userId") String userId,@PathVariable("formId") String formId){
-        return userService.getRequiredDocument(userId,formId);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-    @GetMapping("/photos/{id}")
-    public ResponseEntity getPhoto(@PathVariable String id) {
-        Image photo = imageService.getPhoto(id);
-//        model.addAttribute("title", photo.getTitle());
-//        model.addAttribute("image",
-//                Base64.getEncoder().encodeToString(photo.getImage().getData()));
-       // return new ResponseEntity(,HttpStatus.OK);// new ResponseEntity;
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo.getImage().getData());
-    }
-
-
-
-     @GetMapping("/getAllUsers")
-    public ResponseEntity getAllUser() throws Exception {
-           return userService.getAllUser();
-     }
-
-
-     @GetMapping("/getAllForms")
+    @GetMapping("/getAllForms")
     public ResponseEntity getAllForms()throws Exception{
-       return formService.getAllForms();
-     }
+        return formService.getAllForms();
+    }
 
 
+    /**
+     * update Form Data
+     * @param f
+     * @param formId
+     * @return
+     * @throws Exception
+     */
+
+    @PutMapping("/updateForm/{formId}")
+    public ResponseEntity updateForm(@RequestBody Form f,@PathVariable("formId") String formId) throws Exception {
+        f.setModifiedAt(new Date());
+        if(f.get_id()==null)
+            f.set_id(formId);
+        return formService.updateFormData(formId,f);
+    }
+
+    /**
+     * deleteForm
+     * @param formId
+     * @return
+     */
+
+    @DeleteMapping("/deleteForm/{formId}")
+    public ResponseEntity deleteForm(@PathVariable("formId") String formId) throws Exception {
+        return formService.deleteForm(formId);
+    }
+
+    @PostMapping("/addRequiredDocuments/{formId}")
+    public ResponseEntity addRequiredDocuments(@PathVariable("formId") String formId,@RequestBody FormIdsPojo rdoc) throws Exception {
+        return supportedDocService.addSupportedDocumentforForm(formId,rdoc);
+    }
 
 
+    @PostMapping("/addUserData/{userId}")
+    public ResponseEntity addUserData(@PathVariable("userId") String userId,
+                                       @RequestParam("document") MultipartFile document)      throws Exception {
+
+        return userService.storeUserData(userId,document);
+
+    }
+
+    @GetMapping("/api/download/csv/{userId}")
+    public void downloadFile(HttpServletResponse response,@PathVariable("userId") String userId ) throws IOException {
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+        String currentDateTime = dateFormatter.format(new Date());
+        response.setContentType("text/csv");
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=userData_" + userId + ".csv";
+        response.setHeader(headerKey,headerValue);
+        userService.loadFile(response.getWriter(),userId);
+    }
 
 
 

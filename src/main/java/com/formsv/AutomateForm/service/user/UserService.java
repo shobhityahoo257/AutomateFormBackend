@@ -1,25 +1,37 @@
 package com.formsv.AutomateForm.service.user;
 
 
+import com.formsv.AutomateForm.Constants.Constants;
+import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.FormRequiredDocument;
+import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
+import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
 import com.formsv.AutomateForm.model.user.User;
+import com.formsv.AutomateForm.model.user.UserData;
 import com.formsv.AutomateForm.model.user.UserDocuments;
+import com.formsv.AutomateForm.repository.SupportedDocRepo;
+import com.formsv.AutomateForm.repository.SupportedFieldsRepo;
 import com.formsv.AutomateForm.repository.form.FormRequiredDocumentRepo;
+import com.formsv.AutomateForm.repository.user.UserDataRepo;
 import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.repository.user.UserRepo;
 import com.formsv.AutomateForm.responseModel.FamilyResponse;
 import com.formsv.AutomateForm.responseModel.RequiredDocumentResponse;
 import com.formsv.AutomateForm.responseModel.employeeResponseModel.AllUserData;
+import com.formsv.AutomateForm.service.SupportedDocService;
+import com.formsv.AutomateForm.service.SupportedFieldsService;
+import com.formsv.AutomateForm.utils.OpenCsvUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -30,6 +42,14 @@ public class UserService {
     FormRequiredDocumentRepo formRequiredDocumentRepo;
     @Autowired
     UserDocumentsRepo userDocumentsRepo;
+    @Autowired
+    UserDataRepo userDataRepo;
+    @Autowired
+    SupportedDocRepo supportedDocRepo;
+    @Autowired
+    SupportedFieldsService supportedFieldsService;
+
+
 
     public ResponseEntity createUser(User user) throws Exception {
          if(isUserExistByMobileNumber(user.getMobileNumber()))
@@ -89,6 +109,7 @@ public class UserService {
         List<UserDocuments> userDoc=userDocumentsRepo.findByUserId(userId);
         List<RequiredDocumentResponse.Document> list=new ArrayList<>();
         Set<String>  set=new HashSet<>();
+        List<String> ids=new ArrayList<>();
         for (UserDocuments document:userDoc) {
                     set.add(document.getDocumentId());
         }
@@ -100,7 +121,20 @@ public class UserService {
                 docu.setUploadedByUser(true);
             }
           list.add(docu);
+            ids.add(f.getDocumentId());
         }
+
+        List<SupportedDoc> supportedDocs=supportedDocRepo.findAllBy_idIsIn(ids);
+
+        Map<String ,String > m=new HashMap<>();
+        for (SupportedDoc s:supportedDocs) {
+            m.put(s.get_id(),s.getDocName());
+        }
+
+        for (int i=0;i<list.size();i++){
+            list.get(i).setDocumentName(m.get(list.get(i).getDocumentId()));
+        }
+
         RequiredDocumentResponse requiredDocumentResponse=new RequiredDocumentResponse(userId,formId,list);
          return new ResponseEntity(requiredDocumentResponse,HttpStatus.OK);
     }
@@ -120,7 +154,100 @@ public class UserService {
         }
         AllUserData allUserData=new AllUserData();
         allUserData.setData(userList);
-        return new ResponseEntity(allUserData,HttpStatus.OK);
+        return new ResponseEntity(allUserData
+                ,HttpStatus.OK);
     }
+
+
+    public ResponseEntity addUpdateUserData(List<UserData> userDataList,String userId) throws Exception{
+        if(!isUserExistById(userId))
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(userDataRepo.saveAll(userDataList),HttpStatus.OK);
+    }
+
+    public ResponseEntity deleteRequiredDocument(String id)
+    {
+        formRequiredDocumentRepo.deleteById(id);
+        return new ResponseEntity(Constants.DELETED,HttpStatus.OK);
+    }
+
+    public boolean deleteAllRequiredDocumentsOfFOrm(String formId){
+        formRequiredDocumentRepo.deleteAllByFormId(formId);
+        return true;
+    }
+
+
+    public ResponseEntity  storeUserData(String userId,MultipartFile f) throws Exception{
+             Map<String,List<String>> map=new HashMap<>();
+             map=OpenCsvUtil.parseCsvFile(userId,f.getInputStream());
+             return uploadUserdata(userId,map.get("field"),map.get("fieldValue"));
+    }
+
+
+
+    public ResponseEntity uploadUserdata(String userId,List<String> fieldName,List<String> fieldValue) throws Exception {
+        List<UserData> userDataList = new ArrayList<>();
+
+        try {
+            if (isFieldsExist(fieldName)) {
+                for (int i = 0; i < fieldValue.size(); i++) {
+//                map.put(fieldName.get(i), fieldValue.get(i));
+                    userDataList.add(new UserData(userId, fieldName.get(i), fieldValue.get(i)));
+                }
+                deleteUserData(userId, fieldName);
+                return createUserdata(userDataList);
+            }
+        }catch (RuntimeException e){
+            return new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+         return null;
+    }
+
+
+    public boolean isFieldsExist(List<String > fieldsName){
+        List<SupportedFields> f= supportedFieldsService.findAllByFieldNameIsIn(fieldsName);
+
+        List<String> notSupported=new ArrayList<>();
+        if(f.size()==fieldsName.size())
+            return true;
+        else{
+        Set<String> s=new HashSet<>();
+        for (SupportedFields supp:f) {
+            s.add(supp.getFieldName());
+        }
+        for (String field:fieldsName) {
+            if(!s.contains(field)){
+                notSupported.add(field);
+            }
+        }
+        throw new RuntimeException("These fields are not Supported By the System"+notSupported.toString());
+        }
+    }
+
+
+    public void loadFile(Writer writer,String userId) throws IOException {
+        try {
+            List<UserData> userDataList =  userDataRepo.findAllByUserId(userId);
+
+            // Using ApacheCommons Csv Utils to write Customer List objects to a Writer
+            OpenCsvUtil.UserDataToCsv(writer, userDataList);
+
+            // Using Open CSV Utils to write Customer List objects to a Writer
+            // OpenCsvUtil.customersToCsv(writer, customers);
+        } catch(Exception e) {
+            throw new RuntimeException("Fail! -> Message = " + e.getMessage());
+        }
+    }
+
+
+    public void deleteUserData(String userId,List<String> list){
+        userDataRepo.deleteAllByUserIdAndAndFieldNameIsIn(userId,list);
+    }
+
+    public ResponseEntity createUserdata(List<UserData> userDataList)
+    {
+       return  new ResponseEntity(userDataRepo.saveAll(userDataList),HttpStatus.CREATED);
+    }
+
 
 }

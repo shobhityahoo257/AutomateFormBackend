@@ -3,7 +3,8 @@ package com.formsv.AutomateForm.Constants;
 public enum Constants {
 
     PENDING("PENDING"),
-    COMPLETED("COMPLETED");
+    COMPLETED("COMPLETED"),
+    DELETED("DELETED");
 
 
     public final String value;
