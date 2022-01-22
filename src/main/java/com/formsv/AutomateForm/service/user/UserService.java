@@ -23,10 +23,16 @@ import com.formsv.AutomateForm.service.SupportedFieldsService;
 import com.formsv.AutomateForm.utils.OpenCsvUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -90,17 +96,11 @@ public class UserService {
     }
 
     public ResponseEntity addNewMember(User user) throws Exception {
-        if(isUserExistByMobileNumber(user.getMobileNumber()))
-        {
-            try {
-                return new ResponseEntity(userRepo.save(user), HttpStatus.CREATED);
-            }catch (DuplicateKeyException e)
-            {
-                return new ResponseEntity("Please choose Another UserName", HttpStatus.BAD_REQUEST);
-            }
-        }
-        else {
-            return new ResponseEntity("No User Exist", HttpStatus.BAD_REQUEST);
+        try {
+            return new ResponseEntity(userRepo.save(user), HttpStatus.CREATED);
+        } catch (DuplicateKeyException e) {
+            return new ResponseEntity("Please choose Another UserName", HttpStatus.BAD_REQUEST);
+
         }
     }
 
@@ -249,5 +249,52 @@ public class UserService {
        return  new ResponseEntity(userDataRepo.saveAll(userDataList),HttpStatus.CREATED);
     }
 
+   public User updateUser(String userId,MultipartFile f,String userName) throws IOException {
+        User u=userRepo.findUserBy_id(userId);
+        if(f!=null)
+        u.setProfileImage(f.getBytes());
+        else
+            u.setProfileImage(null);
+        u.setUserName(userName);
+        return userRepo.save(u);
+   }
+
+   public List<User> updateMobileNumber(String userId,String mobileNumber){
+        User u=userRepo.findUserBy_id(userId);
+        List<User> userList=userRepo.findByMobileNumber(u.getMobileNumber());
+      for(int i=0;i<userList.size();i++){
+          userList.get(i).setMobileNumber(mobileNumber);
+      }
+        return userRepo.saveAll(userList);
+   }
+
+   //userId is treated as userName & userName is treated as pass
+
+   public org.springframework.security.core.userdetails.User loadUserByUsername(String userId){
+       User user=userRepo.findUserBy_id(userId);
+       return new org.springframework.security.core.userdetails.User(user.get_id(), user.getUserName(),new ArrayList<>());
+   }
+
+   private void createUserDetails(String userId,String userName){
+
+   }
+
+   public User setLock(String userId) throws Exception{
+        User u=userRepo.findUserBy_id(userId);
+        u.setLock(true);
+        return userRepo.save(u);
+   }
+
+   public User releaseLock(String userid) throws Exception{
+           User u = userRepo.findUserBy_id(userid);
+           u.setLock(false);
+         return   userRepo.save(u);
+   }
+
+   public boolean isUserLocked(String userid) throws NullPointerException{
+      return userRepo.findUserBy_id(userid).isLock();
+   }
 
 }
+
+

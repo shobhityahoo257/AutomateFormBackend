@@ -8,7 +8,8 @@ ExceptionConstants {
     CREATED("Data Created"),
     USERNOTFOUND("User Not Found"),
     DATANOTEXIST("Data doesn't Exist"),
-    FORMNOTEXIST("Form Doesn't Exist");
+    FORMNOTEXIST("Form Doesn't Exist"),
+    USERLOCKED("User is Currently Locked");
 
 
     public final String value;

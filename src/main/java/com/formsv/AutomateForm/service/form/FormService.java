@@ -41,7 +41,7 @@ public class FormService {
             return new ResponseEntity("No User Exist",HttpStatus.BAD_REQUEST);
 
         //Here FormList size is not more than 1000. So not much concern about complexity
-        List<Form> formList=formRepo.findByEnabled(true);
+        List<Form> formList=formRepo.findByEnabledOrderByCreatedAtDesc(true);
 
         List<AppliedForm> appliedForms=appliedFormRepo.findAllByUserId(userId);
 

@@ -32,8 +32,6 @@ public class ImageService {
     SupportedDocService supportedDocService;
 
     public ResponseEntity addPhoto(String userId, String documentId, MultipartFile file) throws Exception {
-           if( !userService.isUserExistById(userId))
-               return new ResponseEntity("User Doesn't Exist with given userId",HttpStatus.BAD_REQUEST);
         SupportedDoc supportedDoc=supportedDocService.getById(documentId);
            if(supportedDoc==null)
                return new ResponseEntity("Document Doesn't Exist with given documentId",HttpStatus.BAD_REQUEST);
@@ -45,7 +43,7 @@ public class ImageService {
             try {
                 return new ResponseEntity(userDocumentsRepo.save(doc), HttpStatus.CREATED);
             }catch (org.springframework.dao.DuplicateKeyException e){
-                return new ResponseEntity("Document Alredy Exist with same Document Id",HttpStatus.BAD_REQUEST);
+                return new ResponseEntity("Document Already Exist with same Document Id",HttpStatus.BAD_REQUEST);
             }
     }
 
