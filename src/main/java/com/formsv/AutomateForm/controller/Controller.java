@@ -140,14 +140,11 @@ This is used to add Required Documents for a form
         return userService.getRequiredDocument(userId,formId);
     }
 
-    @GetMapping("/photos/{id}")
-    public ResponseEntity getPhoto(@PathVariable String id) {
-        Image photo = imageService.getPhoto(id);
-//        model.addAttribute("title", photo.getTitle());
-//        model.addAttribute("image",
-//                Base64.getEncoder().encodeToString(photo.getImage().getData()));
-       // return new ResponseEntity(,HttpStatus.OK);// new ResponseEntity;
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo.getImage().getData());
+    @GetMapping("/getUserSingleDocument/{userId}/{documentId}")
+    public ResponseEntity getPhoto(@PathVariable("userId") String userId,@PathVariable("documentId") String documentId) {
+        if(!userService.isUserExistById(userId))
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(userDataService.getUserDocuments(userId,documentId),HttpStatus.OK);
     }
 
 
@@ -164,6 +161,7 @@ This is used to add Required Documents for a form
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         return new ResponseEntity(userDataService.getAllUserDocuments(userId), HttpStatus.OK);
     }
+
 
 
 
