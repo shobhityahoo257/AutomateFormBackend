@@ -4,8 +4,10 @@ import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.FormIdsPojo;
 import com.formsv.AutomateForm.model.form.FormRequiredDocument;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
+import com.formsv.AutomateForm.model.user.UserDocuments;
 import com.formsv.AutomateForm.repository.SupportedDocRepo;
 import com.formsv.AutomateForm.repository.form.FormRequiredDocumentRepo;
+import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.service.form.FormService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -14,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class SupportedDocService {
@@ -25,7 +29,8 @@ public class SupportedDocService {
     FormRequiredDocumentRepo formRequiredDocumentRepo;
     @Autowired
     FormService formService;
-
+    @Autowired
+    UserDocumentsRepo userDocumentsRepo;
     public ResponseEntity createSupportedDoc(List<SupportedDoc> list) {
         try {
             List<SupportedDoc> l = supportedDocRepo.insert(list);
@@ -85,5 +90,23 @@ public class SupportedDocService {
     }
 
 
+    public List<SupportedDoc> getAllSupportedDocuments(String userId){
+        List<UserDocuments> userDocuments=userDocumentsRepo.findByUserId(userId);
+        List<SupportedDoc> doc= supportedDocRepo.findAll();
+        List<SupportedDoc> res=new ArrayList<>();
+        if(doc==null || doc.size()==0)
+            return doc;
+        Set<String>  set=new HashSet<>();
+        for (UserDocuments userDocuments1:userDocuments) {
+            set.add(userDocuments1.getDocumentId());
+        }
+
+        for (int i=0;i<doc.size();i++) {
+            if(!set.contains(doc.get(i).get_id())){
+                 res.add(doc.get(i));
+            }
+        }
+        return res;
+    }
 
 }
