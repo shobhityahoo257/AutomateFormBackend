@@ -4,7 +4,8 @@ public enum Constants {
 
     PENDING("PENDING"),
     COMPLETED("COMPLETED"),
-    DELETED("DELETED");
+    DELETED("DELETED"),
+    TRANSACTIONID("X-TRANSACTION-ID");
 
 
     public final String value;

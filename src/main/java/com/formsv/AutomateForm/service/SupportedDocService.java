@@ -85,6 +85,7 @@ public class SupportedDocService {
     }
 
  public List<SupportedDoc> getAllSupportedDocuments(){
+
        return supportedDocRepo.findAll();
  }
 

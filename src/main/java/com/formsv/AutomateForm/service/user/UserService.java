@@ -6,6 +6,7 @@ import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.FormRequiredDocument;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
+import com.formsv.AutomateForm.model.transaction.UserInteraction;
 import com.formsv.AutomateForm.model.user.User;
 import com.formsv.AutomateForm.model.user.UserData;
 import com.formsv.AutomateForm.model.user.UserDocuments;
@@ -20,6 +21,7 @@ import com.formsv.AutomateForm.responseModel.RequiredDocumentResponse;
 import com.formsv.AutomateForm.responseModel.employeeResponseModel.AllUserData;
 import com.formsv.AutomateForm.service.SupportedDocService;
 import com.formsv.AutomateForm.service.SupportedFieldsService;
+import com.formsv.AutomateForm.service.UserInteractionService;
 import com.formsv.AutomateForm.utils.OpenCsvUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -31,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -54,6 +57,8 @@ public class UserService {
     SupportedDocRepo supportedDocRepo;
     @Autowired
     SupportedFieldsService supportedFieldsService;
+    @Autowired
+    UserInteractionService userInteractionService;
 
 
 
@@ -81,18 +86,12 @@ public class UserService {
     }
 
 
-    public ResponseEntity getFamily(String mobileNumber) throws Exception{
+    public FamilyResponse getFamily(String mobileNumber) throws Exception{
         List<User> userList=userRepo.findByMobileNumber(mobileNumber);
         FamilyResponse familyResponse =new FamilyResponse();
-        if(userList==null || userList.size()==0)
-            return new ResponseEntity("NO Family Exist",HttpStatus.NOT_FOUND);
-        else
-        {
-
-            familyResponse.setMobileNumber(mobileNumber);
-            familyResponse.setUsers(userList);
-        }
-        return new ResponseEntity(familyResponse,HttpStatus.OK);
+        familyResponse.setMobileNumber(mobileNumber);
+        familyResponse.setUsers(userList);
+        return familyResponse;
     }
 
     public ResponseEntity addNewMember(User user) throws Exception {
@@ -293,6 +292,13 @@ public class UserService {
 
    public boolean isUserLocked(String userid) throws NullPointerException{
       return userRepo.findUserBy_id(userid).isLock();
+   }
+
+   public boolean isFamilyExist(String mobileNumber){
+       List<User> u=userRepo.findByMobileNumber(mobileNumber);
+       if( u==null|| u.size()==0)
+           return false;
+       return true;
    }
 
 }

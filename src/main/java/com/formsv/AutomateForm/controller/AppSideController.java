@@ -5,18 +5,25 @@ import com.formsv.AutomateForm.Constants.Constants;
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.AppliedForm;
 import com.formsv.AutomateForm.model.image.Image;
+import com.formsv.AutomateForm.model.transaction.UserInteraction;
 import com.formsv.AutomateForm.model.user.User;
 import com.formsv.AutomateForm.model.user.UserDocuments;
+import com.formsv.AutomateForm.responseModel.FamilyResponse;
 import com.formsv.AutomateForm.security.AuthenticationRequest;
 import com.formsv.AutomateForm.security.JwtFilters;
 import com.formsv.AutomateForm.security.util.JwtUtil;
 import com.formsv.AutomateForm.service.SupportedDocService;
 import com.formsv.AutomateForm.service.SupportedFieldsService;
+import com.formsv.AutomateForm.service.UserInteractionService;
 import com.formsv.AutomateForm.service.form.AppliedFormService;
 import com.formsv.AutomateForm.service.form.FormService;
 import com.formsv.AutomateForm.service.image.ImageService;
 import com.formsv.AutomateForm.service.user.UserDataService;
 import com.formsv.AutomateForm.service.user.UserService;
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
@@ -35,17 +42,23 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
 @RestController()
 public class AppSideController {
+
+    private static final Logger log = LoggerFactory.getLogger(AppSideController.class);
+
 
     @Autowired
     UserService userService;
@@ -68,11 +81,15 @@ public class AppSideController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    UserInteractionService userInteractionService;
+
 
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
 
+        log.info("Authentication Started for :"+authenticationRequest.toString());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
@@ -81,13 +98,15 @@ public class AppSideController {
         catch (BadCredentialsException e) {
             throw new Exception("Incorrect username or password", e);
         }
-
+      log.info("Authenticated for Generating Token");
+        log.info("Generating Token and Loading user");
  //Password =userId
         final UserDetails userDetails = userService
                 .loadUserByUsername(authenticationRequest.getUsername());
-
+        if(userDetails!=null)
+        log.info("User is Loaded");
         final String jwt = jwtTokenUtil.generateToken(userDetails);
-
+        log.info("Token Is created Returning Token");
         return ResponseEntity.ok(jwt);
     }
 
@@ -97,7 +116,27 @@ public class AppSideController {
 
     @GetMapping("getFamily/{mobileNumber}")
     public ResponseEntity getFamily(@PathVariable("mobileNumber") String mobileNumber) throws Exception {
-        return userService.getFamily(mobileNumber);
+        UserInteraction ui=new UserInteraction();
+        ResponseEntity res;
+        ui.setEndPoint("getFamily/"+mobileNumber);
+        ui=userInteractionService.saveInteraction(ui);
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add(Constants.TRANSACTIONID.value, ui.get_id());
+       if( !userService.isFamilyExist(mobileNumber) )
+       {
+         res=new ResponseEntity(ExceptionConstants.NOFAMILY,headers,HttpStatus.BAD_REQUEST);
+          ui.setResponse(res);
+       }
+       else {
+           FamilyResponse fr = userService.getFamily(mobileNumber);
+           res=new ResponseEntity(fr,headers,HttpStatus.OK);
+           for (int i=0;i<fr.getUsers().size();i++) {
+
+           }
+           ui.setResponse(fr);
+       }
+       userInteractionService.saveInteraction(ui);
+       return res;
     }
 
     @PostMapping("/createUser/{userName}/{mobileNumber}")
@@ -255,7 +294,7 @@ public class AppSideController {
     }
 
     /**
-     * Get All Supported Documents Of System
+     * Get All Supported Documents Of System which can be uploaded by User
      * @return
      */
     @GetMapping("/getAllSupportedDocuments")

@@ -9,7 +9,8 @@ ExceptionConstants {
     USERNOTFOUND("User Not Found"),
     DATANOTEXIST("Data doesn't Exist"),
     FORMNOTEXIST("Form Doesn't Exist"),
-    USERLOCKED("User is Currently Locked");
+    USERLOCKED("User is Currently Locked"),
+    NOFAMILY("Family Doesn't Exist");
 
 
     public final String value;
