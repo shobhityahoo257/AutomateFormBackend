@@ -6,8 +6,10 @@ import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
 import com.formsv.AutomateForm.model.user.MultipleUserData;
 import com.formsv.AutomateForm.model.user.User;
 import com.formsv.AutomateForm.model.user.UserData;
+import com.formsv.AutomateForm.model.user.UserDocuments;
 import com.formsv.AutomateForm.repository.SupportedFieldsRepo;
 import com.formsv.AutomateForm.repository.user.UserDataRepo;
+import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.service.SupportedFieldsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,9 @@ public class UserDataService {
     UserDataRepo userDataRepo;
     @Autowired
     UserService userService;
+
+    @Autowired
+    UserDocumentsRepo userDocumentsRepo;
 
 
 
@@ -62,7 +67,9 @@ public class UserDataService {
     }
 
 
-
+    public List<UserDocuments> getAllUserDocuments(String userId){
+        return userDocumentsRepo.findByUserId(userId);
+    }
 
 
 }

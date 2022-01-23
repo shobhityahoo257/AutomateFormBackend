@@ -152,6 +152,18 @@ This is used to add Required Documents for a form
 
 
 
+    @GetMapping("/getAllSupportedDocuments/{userId}")
+    public ResponseEntity getAllSupportedDocuments(@PathVariable("userId") String userId){
+        return new ResponseEntity(supportedDocService.getAllSupportedDocuments(userId),HttpStatus.OK);
+    }
+
+
+    @GetMapping("/getAllDocumentsOfUser/{userId}")
+    public  ResponseEntity getAllDocumentsOfUser(@PathVariable("userId") String userId) throws IOException {
+        if(!userService.isUserExistById(userId))
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(userDataService.getAllUserDocuments(userId), HttpStatus.OK);
+    }
 
 
 
