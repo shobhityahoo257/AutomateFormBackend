@@ -164,6 +164,10 @@ public class UserService {
         return new ResponseEntity(userDataRepo.saveAll(userDataList),HttpStatus.OK);
     }
 
+    public void deleteSingleUserField(String fieldId) throws Exception{
+        userDataRepo.deleteById(fieldId);
+    }
+
     public ResponseEntity deleteRequiredDocument(String id)
     {
         formRequiredDocumentRepo.deleteById(id);

@@ -20,13 +20,14 @@ public class UserData {
     private String id;
     @Indexed
     private String userId;
-    private String fieldName;
-    private String filedValue;
+    private String documentId;
+    private String fieldId;
+    private String value;
 
-    public UserData(String userId,String fieldName,String fieldValue)
+    public UserData(String userId,String fieldId,String value)
     {
         this.setUserId(userId);
-        this.setFieldName(fieldName);
-        this.setFiledValue(fieldValue);
+        this.setFieldId(fieldId);
+        this.setValue(value);
     }
 }

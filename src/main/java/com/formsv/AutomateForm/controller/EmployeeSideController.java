@@ -1,5 +1,6 @@
 package com.formsv.AutomateForm.controller;
 
+import com.formsv.AutomateForm.Constants.Constants;
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.Form;
 import com.formsv.AutomateForm.model.form.FormIdsPojo;
@@ -67,7 +68,17 @@ public class EmployeeSideController {
      */
     @PostMapping("/storeUserData/{userid}")
     public ResponseEntity storeUserData(@RequestBody List<UserData> userDataList,@PathVariable("userId") String userid) throws Exception {
+        if(!userService.isUserExistById(userid))
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         return userService.addUpdateUserData(userDataList,userid);
+    }
+
+    @DeleteMapping("/deleteSingleUserField/{userId}/{fieldId}")
+    public ResponseEntity deleteSingleUserField(@PathVariable("userId") String userid,@PathVariable("fieldId") String fieldId) throws Exception {
+        if(!userService.isUserExistById(userid))
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+       userService.deleteSingleUserField(fieldId);
+        return new ResponseEntity(Constants.DELETED,HttpStatus.OK);
     }
 
     /*
@@ -92,14 +103,26 @@ public class EmployeeSideController {
 //        }
 //    }
 
-    @PostMapping("/createSupportedFields")
-    public ResponseEntity createSupportedFields(@RequestBody(required = true) List<SupportedFields> list) {
+    /**
+     * This api is used toCreate/update Supported Fields
+     * @param list
+     * @param documentId
+     * @return
+     */
+    @PostMapping("/createSupportedFields/{documentId}")
+    public ResponseEntity createSupportedFields(@RequestBody(required = true) List<SupportedFields> list,@PathVariable("documentId") String documentId) {
+           if( !supportedDocService.isDocumentExistById(documentId))
+               return new ResponseEntity(ExceptionConstants.NODOCUMENT,HttpStatus.BAD_REQUEST);
+           if(list.size()==0)
+               return new ResponseEntity(ExceptionConstants.EMPTYBODY,HttpStatus.BAD_REQUEST);
         try {
-            return supportedFieldsService.createSupportedFields(list);
+            return supportedFieldsService.createSupportedFields(list,documentId);
         } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 
     @PostMapping("/createSupportedDoc")
     public ResponseEntity createSupportedDoc(@RequestBody(required = true) List<SupportedDoc> list) {
@@ -110,6 +133,12 @@ public class EmployeeSideController {
         }
     }
 
+    @PutMapping("/updateSupportedDoc/{documentId}")
+    public ResponseEntity updateSupportedDoc(@PathVariable("documentId") String documentId,@RequestBody SupportedDoc doc){
+        if(!supportedDocService.isDocumentExistById(documentId))
+            return new ResponseEntity(ExceptionConstants.NODOCUMENT,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(supportedDocService.updateSupportedDoc(doc),HttpStatus.BAD_REQUEST);
+    }
 
 
     /**

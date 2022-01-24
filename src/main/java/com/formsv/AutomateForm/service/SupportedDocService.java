@@ -109,4 +109,16 @@ public class SupportedDocService {
         return res;
     }
 
+    /**
+     * Generally This function should not be used
+     * @param documentId
+     */
+    public void deleteSupportedDocument(String documentId){
+
+    }
+
+    public SupportedDoc updateSupportedDoc(SupportedDoc doc){
+       return supportedDocRepo.save(doc);
+    }
+
 }

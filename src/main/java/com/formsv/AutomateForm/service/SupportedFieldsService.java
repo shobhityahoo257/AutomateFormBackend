@@ -19,7 +19,9 @@ public class SupportedFieldsService {
     @Autowired
     SupportedFieldsRepo supportedFieldsRepo;
 
-    public ResponseEntity createSupportedFields(List<SupportedFields> list) {
+    public ResponseEntity createSupportedFields(List<SupportedFields> list,String documentId) {
+        for(int i=0;i<list.size();i++)
+            list.get(i).setDocumentId(documentId);
         try {
             List<SupportedFields> l = supportedFieldsRepo.insert(list);
             return new ResponseEntity(l, HttpStatus.CREATED);

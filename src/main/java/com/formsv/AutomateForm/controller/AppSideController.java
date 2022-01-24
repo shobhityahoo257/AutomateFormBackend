@@ -297,9 +297,9 @@ public class AppSideController {
      * Get All Supported Documents Of System which can be uploaded by User
      * @return
      */
-    @GetMapping("/getAllSupportedDocuments")
-    public ResponseEntity getAllSupportedDocuments(){
-       return new ResponseEntity(supportedDocService.getAllSupportedDocuments(),HttpStatus.OK);
+    @GetMapping("/getAllSupportedDocuments/{userId}")
+    public ResponseEntity getAllSupportedDocuments(@PathVariable("userId") String userId){
+       return new ResponseEntity(supportedDocService.getAllSupportedDocuments(userId),HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteDocument/{userId}/{documentId}")
