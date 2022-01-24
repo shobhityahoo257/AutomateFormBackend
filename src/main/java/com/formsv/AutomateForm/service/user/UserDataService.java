@@ -29,8 +29,10 @@ public class UserDataService {
     UserDataRepo userDataRepo;
     @Autowired
     UserService userService;
+
     @Autowired
     UserDocumentsRepo userDocumentsRepo;
+
 
 
 
@@ -68,10 +70,21 @@ public class UserDataService {
     }
 
 
-  public List<UserDocuments> getAllUserDocuments(String userId){
-       return userDocumentsRepo.findByUserId(userId);
-  }
+    public List<UserDocuments> getAllUserDocuments(String userId){
+        List<UserDocuments> doc= userDocumentsRepo.findByUserId(userId);
+        if(doc==null|| doc.size()==0)
+            return doc;
+        for (int i=0;i<doc.size();i++)
+        {
+            doc.get(i).setImage(null);
+        }
+        return doc;
+    }
 
+
+    public UserDocuments getUserDocuments(String userId,String documentId){
+     return userDocumentsRepo.getByUserIdAndDocumentId(userId,documentId);
+    }
   public void deleteDocumentById (String docId) throws Exception
   {
       userDocumentsRepo.deleteById(docId);
