@@ -13,6 +13,6 @@ public interface UserRepo extends MongoRepository<User,String> {
 
     User findUserByMobileNumberAndUserName(String mobileNumber,String userName);
   //  User findUserByMobileNumberAndNoOfMembersIsNotNull(String mobileNumber);
-    User findUserBy_id(String id) throws UsernameNotFoundException;;
+    User findUserBy_id(String id) throws UsernameNotFoundException;
     List<User> findByMobileNumber(String mobileNumber);
 }

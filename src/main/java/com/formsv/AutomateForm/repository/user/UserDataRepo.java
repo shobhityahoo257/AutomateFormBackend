@@ -10,5 +10,5 @@ import java.util.List;
 public interface UserDataRepo extends MongoRepository<UserData,String> {
 //   UserData findByUserIdAndFieldId(String userId,String fieldId);
    List<UserData> findAllByUserId(String userId);
-   void deleteAllByUserIdAndAndFieldNameIsIn(String userId,List<String> fieldName );
+  // void deleteAllByUserIdAndAndFieldNameIsIn(String userId,List<String> fieldName );
 }

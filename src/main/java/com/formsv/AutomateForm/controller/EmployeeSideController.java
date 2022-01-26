@@ -77,7 +77,7 @@ public class EmployeeSideController {
     public ResponseEntity deleteSingleUserField(@PathVariable("userId") String userid,@PathVariable("fieldId") String fieldId) throws Exception {
         if(!userService.isUserExistById(userid))
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
-       userService.deleteSingleUserField(fieldId);
+       userDataService.deleteSingleUserField(fieldId);
         return new ResponseEntity(Constants.DELETED,HttpStatus.OK);
     }
 

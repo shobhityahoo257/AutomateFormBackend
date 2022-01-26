@@ -1,65 +1,57 @@
 package com.formsv.AutomateForm.service.user;
 
 
-import com.formsv.AutomateForm.Constants.Constants;
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.FormRequiredDocument;
+import com.formsv.AutomateForm.model.image.Image;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
-import com.formsv.AutomateForm.model.transaction.UserInteraction;
 import com.formsv.AutomateForm.model.user.User;
 import com.formsv.AutomateForm.model.user.UserData;
 import com.formsv.AutomateForm.model.user.UserDocuments;
-import com.formsv.AutomateForm.repository.SupportedDocRepo;
-import com.formsv.AutomateForm.repository.SupportedFieldsRepo;
-import com.formsv.AutomateForm.repository.form.FormRequiredDocumentRepo;
-import com.formsv.AutomateForm.repository.user.UserDataRepo;
-import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.repository.user.UserRepo;
 import com.formsv.AutomateForm.responseModel.FamilyResponse;
 import com.formsv.AutomateForm.responseModel.RequiredDocumentResponse;
 import com.formsv.AutomateForm.responseModel.employeeResponseModel.AllUserData;
 import com.formsv.AutomateForm.service.SupportedDocService;
 import com.formsv.AutomateForm.service.SupportedFieldsService;
-import com.formsv.AutomateForm.service.UserInteractionService;
+import com.formsv.AutomateForm.service.form.FormRequiredDocumentService;
+import com.formsv.AutomateForm.service.image.ImageService;
 import com.formsv.AutomateForm.utils.OpenCsvUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
+
 
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 @Service
 public class UserService {
 
-    @Autowired
-    UserRepo userRepo;
-    @Autowired
-    FormRequiredDocumentRepo formRequiredDocumentRepo;
-    @Autowired
-    UserDocumentsRepo userDocumentsRepo;
-    @Autowired
-    UserDataRepo userDataRepo;
-    @Autowired
-    SupportedDocRepo supportedDocRepo;
-    @Autowired
-    SupportedFieldsService supportedFieldsService;
-    @Autowired
-    UserInteractionService userInteractionService;
 
+    private final UserRepo userRepo;
+    private final  FormRequiredDocumentService formRequiredDocumentService;
+    private final UserDocumentService userDocumentService;
+    private final  UserDataService userDataService;
+    private final  SupportedDocService supportedDocService;
+    private final  SupportedFieldsService supportedFieldsService;
+    private final  ImageService imageService;
+
+    @Autowired
+    public UserService(UserRepo userRepo, FormRequiredDocumentService formRequiredDocumentService, UserDocumentService userDocumentService, UserDataService userDataService, SupportedDocService supportedDocService, SupportedFieldsService supportedFieldsService, ImageService imageService) {
+        this.userRepo = userRepo;
+        this.formRequiredDocumentService = formRequiredDocumentService;
+        this.userDocumentService = userDocumentService;
+        this.userDataService = userDataService;
+        this.supportedDocService = supportedDocService;
+        this.supportedFieldsService = supportedFieldsService;
+        this.imageService = imageService;
+    }
 
 
     public ResponseEntity createUser(User user) throws Exception {
@@ -104,8 +96,8 @@ public class UserService {
     }
 
     public ResponseEntity getRequiredDocument(String userId,String formId){
-        List<FormRequiredDocument> reqdoc=formRequiredDocumentRepo.findByFormId(formId);
-        List<UserDocuments> userDoc=userDocumentsRepo.findByUserId(userId);
+        List<FormRequiredDocument> reqdoc=formRequiredDocumentService.findByFormId(formId);
+        List<UserDocuments> userDoc=userDocumentService.findByUserId(userId);
         List<RequiredDocumentResponse.Document> list=new ArrayList<>();
         Set<String>  set=new HashSet<>();
         List<String> ids=new ArrayList<>();
@@ -123,7 +115,7 @@ public class UserService {
             ids.add(f.getDocumentId());
         }
 
-        List<SupportedDoc> supportedDocs=supportedDocRepo.findAllBy_idIsIn(ids);
+        List<SupportedDoc> supportedDocs=supportedDocService.findAllBy_idIsIn(ids);
 
         Map<String ,String > m=new HashMap<>();
         for (SupportedDoc s:supportedDocs) {
@@ -149,7 +141,7 @@ public class UserService {
     public ResponseEntity getAllUser() throws Exception{
         List<User> userList=userRepo.findAll();
         for (User user:userList) {
-            user.setProfileImage(null);
+            user.setProfileImageId(null);
         }
         AllUserData allUserData=new AllUserData();
         allUserData.setData(userList);
@@ -161,23 +153,12 @@ public class UserService {
     public ResponseEntity addUpdateUserData(List<UserData> userDataList,String userId) throws Exception{
         if(!isUserExistById(userId))
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
-        return new ResponseEntity(userDataRepo.saveAll(userDataList),HttpStatus.OK);
+        return new ResponseEntity(userDataService.saveAll(userDataList),HttpStatus.OK);
     }
 
-    public void deleteSingleUserField(String fieldId) throws Exception{
-        userDataRepo.deleteById(fieldId);
-    }
 
-    public ResponseEntity deleteRequiredDocument(String id)
-    {
-        formRequiredDocumentRepo.deleteById(id);
-        return new ResponseEntity(Constants.DELETED,HttpStatus.OK);
-    }
 
-    public boolean deleteAllRequiredDocumentsOfFOrm(String formId){
-        formRequiredDocumentRepo.deleteAllByFormId(formId);
-        return true;
-    }
+
 
 
     public ResponseEntity  storeUserData(String userId,MultipartFile f) throws Exception{
@@ -230,7 +211,7 @@ public class UserService {
 
     public void loadFile(Writer writer,String userId) throws IOException {
         try {
-            List<UserData> userDataList =  userDataRepo.findAllByUserId(userId);
+            List<UserData> userDataList =  userDataService.findAllByUserId(userId);
 
             // Using ApacheCommons Csv Utils to write Customer List objects to a Writer
             OpenCsvUtil.UserDataToCsv(writer, userDataList);
@@ -244,20 +225,22 @@ public class UserService {
 
 
     public void deleteUserData(String userId,List<String> list){
-        userDataRepo.deleteAllByUserIdAndAndFieldNameIsIn(userId,list);
+     //   userDataRepo.deleteAllByUserIdAndAndFieldNameIsIn(userId,list);
     }
 
     public ResponseEntity createUserdata(List<UserData> userDataList)
     {
-       return  new ResponseEntity(userDataRepo.saveAll(userDataList),HttpStatus.CREATED);
+       return  new ResponseEntity(userDataService.saveAll(userDataList),HttpStatus.CREATED);
     }
 
    public User updateUser(String userId,MultipartFile f,String userName) throws IOException {
         User u=userRepo.findUserBy_id(userId);
-        if(f!=null)
-        u.setProfileImage(f.getBytes());
+        if(f!=null) {
+            Image image=new Image(u.get_id(),f.getBytes());
+            imageService.saveImage(image);
+        }
         else
-            u.setProfileImage(null);
+            u.setProfileImageId(null);
         u.setUserName(userName);
         return userRepo.save(u);
    }
@@ -305,6 +288,9 @@ public class UserService {
        return true;
    }
 
+   public User findById(String userId){
+        return userRepo.findUserBy_id(userId);
+   }
 }
 
 

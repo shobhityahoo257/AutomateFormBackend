@@ -9,15 +9,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class SupportedFieldsService {
+
+    private final SupportedFieldsRepo supportedFieldsRepo;
+
     @Autowired
-    SupportedFieldsRepo supportedFieldsRepo;
+    public SupportedFieldsService(SupportedFieldsRepo supportedFieldsRepo) {
+        this.supportedFieldsRepo = supportedFieldsRepo;
+    }
 
     public ResponseEntity createSupportedFields(List<SupportedFields> list,String documentId) {
         for(int i=0;i<list.size();i++)
@@ -41,9 +43,4 @@ public class SupportedFieldsService {
    public List<SupportedFields> findAllByFieldNameIsIn(List<String > fieldsName){
        return   supportedFieldsRepo.findAllByFieldNameIsIn(fieldsName);
    }
-
-
-
-
-
 }

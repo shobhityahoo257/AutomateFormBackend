@@ -10,17 +10,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class AppliedFormService
 {
-    @Autowired
-    AppliedFormRepo appliedFormRepo;
+   private final AppliedFormRepo appliedFormRepo;
 
-    public ResponseEntity getAllAppliedForm(){
-     //   return new ResponseEntity(appliedFormRepo.getAllBy_idIsNotNullAndOrderByCreateAtAsc(), HttpStatus.OK);
-     return null;
+   @Autowired
+    public AppliedFormService(AppliedFormRepo appliedFormRepo) {
+        this.appliedFormRepo = appliedFormRepo;
     }
+
 
     public ResponseEntity completeForm(String userId,String formId){
         AppliedForm appliedForm=appliedFormRepo.findByUserIdAndFormId(userId,formId);
@@ -37,5 +38,9 @@ public class AppliedFormService
         } catch (DuplicateKeyException e) {
             return new ResponseEntity(ExceptionConstants.DATAALREADYEXIST.value, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    public List<AppliedForm> findAllByUserId(String userId){
+        return appliedFormRepo.findAllByUserId(userId);
     }
 }

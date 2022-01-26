@@ -8,8 +8,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserInteractionService  {
-    @Autowired
-    UserInteractionRepo userInteractionRepo;
+
+   private final UserInteractionRepo userInteractionRepo;
+
+   @Autowired
+    public UserInteractionService(UserInteractionRepo userInteractionRepo) {
+        this.userInteractionRepo = userInteractionRepo;
+    }
 
     public UserInteraction saveInteraction(UserInteraction userInteraction){
        return userInteractionRepo.save(userInteraction);

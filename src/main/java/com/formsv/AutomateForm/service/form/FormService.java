@@ -5,11 +5,9 @@ import com.formsv.AutomateForm.Constants.Constants;
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.AppliedForm;
 import com.formsv.AutomateForm.model.form.Form;
-import com.formsv.AutomateForm.repository.form.AppliedFormRepo;
 import com.formsv.AutomateForm.repository.form.FormRepo;
 import com.formsv.AutomateForm.responseModel.UserFormResponse;
 import com.formsv.AutomateForm.responseModel.employeeResponseModel.AllFormData;
-import com.formsv.AutomateForm.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +20,17 @@ import java.util.Set;
 
 @Service
 public class FormService {
+
+    private final FormRepo formRepo;
+    private final AppliedFormService appliedFormRepoService;
+    private final FormRequiredDocumentService formRequiredDocumentService;
+
     @Autowired
-    FormRepo formRepo;
-    @Autowired
-    AppliedFormRepo appliedFormRepo;
-    @Autowired
-    UserService userService;
+    public FormService(FormRepo formRepo, AppliedFormService appliedFormRepoService, FormRequiredDocumentService formRequiredDocumentService) {
+        this.formRepo = formRepo;
+        this.appliedFormRepoService = appliedFormRepoService;
+        this.formRequiredDocumentService = formRequiredDocumentService;
+    }
 
 
     /**
@@ -37,13 +40,12 @@ public class FormService {
      * @throws Exception
      */
     public ResponseEntity getAllFormsOfUser(String userId) throws Exception{
-        if(!userService.isUserExistById(userId))
-            return new ResponseEntity("No User Exist",HttpStatus.BAD_REQUEST);
+
 
         //Here FormList size is not more than 1000. So not much concern about complexity
         List<Form> formList=formRepo.findByEnabledOrderByCreatedAtDesc(true);
 
-        List<AppliedForm> appliedForms=appliedFormRepo.findAllByUserId(userId);
+        List<AppliedForm> appliedForms=appliedFormRepoService.findAllByUserId(userId);
 
         Set<String> set = new HashSet<String >();
         for (AppliedForm appliedForm:appliedForms) {
@@ -92,7 +94,7 @@ public class FormService {
 
     public ResponseEntity deleteForm(String formId) throws Exception{
         formRepo.deleteById(formId);
-        userService.deleteAllRequiredDocumentsOfFOrm(formId);
+        formRequiredDocumentService.deleteAllRequiredDocumentsOfFOrm(formId);
         return new ResponseEntity(Constants.DELETED,HttpStatus.OK);
     }
 

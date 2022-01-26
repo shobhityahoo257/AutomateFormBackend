@@ -2,15 +2,12 @@ package com.formsv.AutomateForm.model.user;
 
 
 import lombok.*;
-import org.bson.types.Binary;
-import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.Size;
-import java.time.LocalDate;
 import java.util.Date;
 
 @AllArgsConstructor
@@ -30,7 +27,7 @@ public class User {
     @NonNull
     @Size(min=1, max=20)
     private String userName;
-    private byte[] profileImage;
+    private String profileImageId;
     private boolean parent;
     private boolean lock;
     private Date createdAt;

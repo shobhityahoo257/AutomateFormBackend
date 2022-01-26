@@ -11,21 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.formsv.AutomateForm.model.user.MultipleUserData;
 import com.formsv.AutomateForm.model.user.UserData;
-import com.formsv.AutomateForm.service.SupportedFieldsService;
 import com.formsv.AutomateForm.service.user.UserDataService;
-import com.opencsv.CSVParserWriter;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
-import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -40,7 +33,7 @@ public class OpenCsvUtil {
 
 
     public static Map<String,List<String>> parseCsvFile(String userId,InputStream is) throws Exception {
-    UserDataService userDataService=new UserDataService();
+    // UserDataService userDataService=new UserDataService(userDataRepo, userService, imageService);
         List<String > fieldName=new ArrayList<>();
         List<String> fieldValue=new ArrayList<>();
         Map<String,List<String>> map=new HashMap<>();

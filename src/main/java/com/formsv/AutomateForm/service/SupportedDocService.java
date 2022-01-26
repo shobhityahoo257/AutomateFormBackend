@@ -6,11 +6,10 @@ import com.formsv.AutomateForm.model.form.FormRequiredDocument;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.user.UserDocuments;
 import com.formsv.AutomateForm.repository.SupportedDocRepo;
-import com.formsv.AutomateForm.repository.form.FormRequiredDocumentRepo;
 import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
+import com.formsv.AutomateForm.service.form.FormRequiredDocumentService;
 import com.formsv.AutomateForm.service.form.FormService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,15 +21,21 @@ import java.util.Set;
 
 @Service
 public class SupportedDocService {
-    @Autowired
-    SupportedDocRepo supportedDocRepo;
+
+    private final SupportedDocRepo supportedDocRepo;
+    private final FormRequiredDocumentService formRequiredDocumentService;
+    private final FormService formService;
+    private final UserDocumentsRepo userDocumentsRepo;
 
     @Autowired
-    FormRequiredDocumentRepo formRequiredDocumentRepo;
-    @Autowired
-    FormService formService;
-    @Autowired
-    UserDocumentsRepo userDocumentsRepo;
+    public SupportedDocService(SupportedDocRepo supportedDocRepo, FormRequiredDocumentService formRequiredDocumentService, FormService formService, UserDocumentsRepo userDocumentsRepo) {
+        this.supportedDocRepo = supportedDocRepo;
+        this.formRequiredDocumentService = formRequiredDocumentService;
+        this.formService = formService;
+        this.userDocumentsRepo = userDocumentsRepo;
+    }
+
+
     public ResponseEntity createSupportedDoc(List<SupportedDoc> list) {
         try {
             List<SupportedDoc> l = supportedDocRepo.insert(list);
@@ -55,7 +60,7 @@ public class SupportedDocService {
         //Validate if Form Exist
         if(!formService.isFormExist(formId) )
             return new ResponseEntity("Form Doesn't Exist",HttpStatus.BAD_REQUEST);
-        formRequiredDocumentRepo.deleteAllByFormId(formId);
+        formRequiredDocumentService.deleteAllByFormId(formId);
 
         List<String> ids=new ArrayList<>();
         for (FormIdsPojo.SupportedDocument doc:rdoc.getList()) {
@@ -69,7 +74,7 @@ public class SupportedDocService {
                     formRequiredDocument.add(new FormRequiredDocument(formId, ids.get(i),rdoc.getList().get(i).getDocumentName()));
                 }
                 try {
-                    return new ResponseEntity(formRequiredDocumentRepo.saveAll(formRequiredDocument), HttpStatus.CREATED);
+                    return new ResponseEntity(formRequiredDocumentService.saveAll(formRequiredDocument), HttpStatus.CREATED);
                 } catch (org.springframework.dao.DuplicateKeyException e){
                 return new ResponseEntity("Data Already Exist", HttpStatus.BAD_REQUEST);
                 }
@@ -119,6 +124,11 @@ public class SupportedDocService {
 
     public SupportedDoc updateSupportedDoc(SupportedDoc doc){
        return supportedDocRepo.save(doc);
+    }
+
+    public List<SupportedDoc> findAllBy_idIsIn(List<String > ids)
+    {
+        return supportedDocRepo.findAllBy_idIsIn(ids);
     }
 
 }

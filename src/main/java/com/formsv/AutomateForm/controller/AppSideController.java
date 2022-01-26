@@ -9,6 +9,7 @@ import com.formsv.AutomateForm.model.transaction.UserInteraction;
 import com.formsv.AutomateForm.model.user.User;
 import com.formsv.AutomateForm.model.user.UserDocuments;
 import com.formsv.AutomateForm.responseModel.FamilyResponse;
+
 import com.formsv.AutomateForm.security.AuthenticationRequest;
 import com.formsv.AutomateForm.security.JwtFilters;
 import com.formsv.AutomateForm.security.util.JwtUtil;
@@ -19,9 +20,8 @@ import com.formsv.AutomateForm.service.form.AppliedFormService;
 import com.formsv.AutomateForm.service.form.FormService;
 import com.formsv.AutomateForm.service.image.ImageService;
 import com.formsv.AutomateForm.service.user.UserDataService;
+import com.formsv.AutomateForm.service.user.UserDocumentService;
 import com.formsv.AutomateForm.service.user.UserService;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -83,6 +82,9 @@ public class AppSideController {
 
     @Autowired
     UserInteractionService userInteractionService;
+
+    @Autowired
+    UserDocumentService userDocumentService;
 
 
 
@@ -141,34 +143,47 @@ public class AppSideController {
 
     @PostMapping("/createUser/{userName}/{mobileNumber}")
     public ResponseEntity<String> createUser(@PathVariable("userName") String userName,@PathVariable("mobileNumber") String mobileNumber,@RequestParam(value = "profileImage",required = false) MultipartFile profileImage ) throws Exception {
+        if(userService.isFamilyExist(mobileNumber))
+            return new ResponseEntity(ExceptionConstants.DATAALREADYEXIST,HttpStatus.BAD_REQUEST);
         User user=new User();
         user.setParent(true);
         user.setUserName(userName);
         user.setMobileNumber(mobileNumber);
-        if(!(profileImage==null))
-        user.setProfileImage(profileImage.getBytes());
+        if(profileImage!=null)
+        user.setProfileImageId(imageService.addImage(profileImage));
         user.setCreatedAt(new Date());
         user.setModifiedAt(user.getCreatedAt());
         return userService.createUser(user);
     }
 
     @PostMapping("/addNewMember/{userId}/{userName}/{mobileNumber}")
-    public ResponseEntity<String> addMember(@PathVariable("userId") String userId,@PathVariable("userName") String userName,@PathVariable("mobileNumber") String mobileNumber,@RequestParam("profileImage") MultipartFile profileImage ) throws Exception {
+    public ResponseEntity<String> addMember(@PathVariable("userId") String userId,@PathVariable("userName") String userName,@PathVariable("mobileNumber") String mobileNumber,@RequestParam(value = "profileImage",required = false) MultipartFile profileImage ) throws Exception {
         try {
             if (userService.isUserLocked(userId))
                 return new ResponseEntity(ExceptionConstants.USERLOCKED, HttpStatus.CONFLICT);
         }catch (NullPointerException e){
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         }
+        User existingParent=userService.findById(userId);
+        if( !existingParent.getMobileNumber().equals(mobileNumber))
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         //Setting Lock
         userService.setLock(userId);
         User user=new User();
         user.setUserName(userName);
         user.setMobileNumber(mobileNumber);
-        //user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
-        user.setProfileImage(profileImage.getBytes());
-        ResponseEntity r=userService.addNewMember(user);
-        userService.releaseLock(userId);
+        user.setCreatedAt(new Date());
+        user.setModifiedAt(user.getCreatedAt());
+        if(profileImage!=null)
+        user.setProfileImageId(imageService.addImage(profileImage));
+        ResponseEntity r=null;
+        try {
+            r = userService.addNewMember(user);
+        }catch (Exception e){
+            throw e;
+        }finally {
+            userService.releaseLock(userId);
+        }
         return r;
     }
 
@@ -180,10 +195,17 @@ public class AppSideController {
         }catch (NullPointerException e){
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         }
-
+              User u=null;
                userService.setLock(userId);
-               User u=userService.updateUser(userId, profileImage, userName);
-               userService.releaseLock(userId);
+          try {
+              u = userService.updateUser(userId, profileImage, userName);
+          }catch (Exception e)
+          {
+              throw e;
+          }
+          finally {
+              userService.releaseLock(userId);
+          }
                return new ResponseEntity(u,HttpStatus.OK);
     }
 
@@ -201,16 +223,24 @@ public class AppSideController {
         }catch (NullPointerException e){
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         }
+        List<User> u=null;
              userService.setLock(userId);
-             List<User> u=userService.updateMobileNumber(userId,mobileNumber);
-             userService.releaseLock(userId);
+        try {
+            u = userService.updateMobileNumber(userId, mobileNumber);
+        }catch (Exception e) {
+            throw  e;
+        }finally {
+            userService.releaseLock(userId);
+        }
             return new ResponseEntity(u,HttpStatus.OK);
     }
 
 
     @GetMapping("/getAllForms/{userId}")
-    public ResponseEntity getAllFormsOfUser(@PathVariable("userId") String useId) throws Exception {
-        return formService.getAllFormsOfUser(useId);
+    public ResponseEntity getAllFormsOfUser(@PathVariable("userId") String userId) throws Exception {
+        if(!userService.isUserExistById(userId))
+            return new ResponseEntity("No User Exist",HttpStatus.BAD_REQUEST);
+        return formService.getAllFormsOfUser(userId);
     }
 
     @PostMapping("/submitForm/{userId}/{formId}")
@@ -245,9 +275,16 @@ public class AppSideController {
         }catch (NullPointerException e){
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         }
+        ResponseEntity r=null;
         userService.setLock(userId);
-        ResponseEntity r= imageService.addPhoto(userId,documentId,document);
-        userService.releaseLock(userId);
+        try {
+             r = userDocumentService.addDocument(userId, documentId, document);
+        }catch (Exception e)
+        {
+            throw e;
+        }finally {
+            userService.releaseLock(userId);
+        }
         return r;
     }
 
@@ -259,9 +296,16 @@ public class AppSideController {
         }catch (NullPointerException e){
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         }
+        UserDocuments d=null;
           userService.setLock(userId);
-           UserDocuments d=userDataService.updateUserDocument(userId,documentId,document);
-           userService.releaseLock(userId);
+        try {
+             d = userDocumentService.updateUserDocument(userId, documentId, document);
+        }catch (Exception e){
+            throw e;
+        }finally {
+            userService.releaseLock(userId);
+        }
+
            return new ResponseEntity(d,HttpStatus.OK);
 
     }
@@ -290,7 +334,7 @@ public class AppSideController {
     public  ResponseEntity getAllDocumentsOfUser(@PathVariable("userId") String userId) throws IOException {
          if(!userService.isUserExistById(userId))
              return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
-         return new ResponseEntity(userDataService.getAllUserDocuments(userId), HttpStatus.OK);
+         return new ResponseEntity(userDocumentService.getAllUserDocuments(userId), HttpStatus.OK);
     }
 
     /**
@@ -311,27 +355,23 @@ public class AppSideController {
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         }
            userService.setLock(userId);
-           userDataService.deleteDocumentById(documentId);
-           userService.releaseLock(userId);
+        try {
+            userDocumentService.deleteDocumentById(documentId);
+        }catch (Exception e)
+        {
+            throw e;
+        }finally {
+            userService.releaseLock(userId);
+        }
            return new ResponseEntity(Constants.DELETED, HttpStatus.OK);
-
     }
 
-
-
-
-
-
-
-
-    @GetMapping("/photos/{id}")
-    public ResponseEntity getPhoto(@PathVariable String id) {
-        Image photo = imageService.getPhoto(id);
-//        model.addAttribute("title", photo.getTitle());
-//        model.addAttribute("image",
-//                Base64.getEncoder().encodeToString(photo.getImage().getData()));
-        // return new ResponseEntity(,HttpStatus.OK);// new ResponseEntity;
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo.getImage().getData());
+    @GetMapping("/photos/{userid}/{id}")
+    public ResponseEntity getImage(@PathVariable("userid") String userid,@PathVariable("id") String id) {
+       if(userService.isUserExistById(userid))
+           return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+        Image photo = imageService.getImage(id);
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo.getImage());
     }
 
 }

@@ -23,6 +23,6 @@ public class UserDocuments {
     private String _id;
     private String userId;
     private String documentId;
-    private byte[] image;
+    private String image;
     private String documentName;
 }
