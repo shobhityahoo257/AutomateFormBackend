@@ -28,6 +28,7 @@ public class User {
     @Size(min=1, max=20)
     private String userName;
     private String profileImageId;
+    private byte[] profileImage;
     private boolean parent;
     private boolean lock;
     private Date createdAt;
