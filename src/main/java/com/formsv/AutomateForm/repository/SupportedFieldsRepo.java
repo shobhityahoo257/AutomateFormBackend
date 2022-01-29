@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface SupportedFieldsRepo extends MongoRepository<SupportedFields,String> {
    SupportedFields findBy_id(String id);
    List<SupportedFields> findAllByFieldNameIsIn(List<String> list);
+   List<SupportedFields> findAllByDocumentId(String documentId);
+   void deleteAllByDocumentId(String id);
 
 
 

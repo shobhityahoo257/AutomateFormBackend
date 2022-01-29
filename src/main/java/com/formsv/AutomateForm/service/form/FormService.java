@@ -82,8 +82,7 @@ public class FormService {
 
     public ResponseEntity getAllForms() throws Exception{
         List<Form> formList=formRepo.findAll();
-        AllFormData allFormData=new AllFormData(formList);
-        return new ResponseEntity(allFormData,HttpStatus.OK);
+        return new ResponseEntity(formList,HttpStatus.OK);
     }
 
     public ResponseEntity updateFormData(String formId,Form form){

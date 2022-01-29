@@ -17,8 +17,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class SupportedFields {
     @Id
     private String _id;
-    @NonNull
     private String documentId;
+    @NonNull
     private String fieldName;
 }
 

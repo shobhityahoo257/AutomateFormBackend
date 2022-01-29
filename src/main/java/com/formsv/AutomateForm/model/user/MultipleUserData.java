@@ -14,6 +14,8 @@ public class MultipleUserData {
     @NonNull
     private String userId;
     @NonNull
+    private String documentId;
+    @NonNull
     private List<UserData> userDataList;
 
 }

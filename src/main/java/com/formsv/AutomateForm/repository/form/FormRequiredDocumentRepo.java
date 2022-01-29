@@ -10,4 +10,5 @@ import java.util.List;
 public interface FormRequiredDocumentRepo extends MongoRepository<FormRequiredDocument,String > {
     List<FormRequiredDocument>  findByFormId(String formId);
     void deleteAllByFormId(String list);
+    void deleteByFormIdAndDocumentId(String formId,String documentId);
 }

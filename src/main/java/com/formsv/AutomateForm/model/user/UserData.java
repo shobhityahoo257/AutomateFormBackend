@@ -17,12 +17,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 public class UserData {
     @Id
-    private String id;
+    private String _id;
     @Indexed
     private String userId;
     private String documentId;
     private String fieldId;
     private String value;
+    private String fieldName;
 
     public UserData(String userId,String fieldId,String value)
     {

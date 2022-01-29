@@ -58,7 +58,9 @@ public class UserService {
          if(isUserExistByMobileNumber(user.getMobileNumber()))
              return new ResponseEntity("User is already Exist with Given Mobile Number", HttpStatus.BAD_REQUEST);
         user.setParent(true);
-            return new ResponseEntity(userRepo.save(user), HttpStatus.CREATED);
+        User u=userRepo.save(user);
+        userDocumentService.addDocument(u.get_id(),supportedDocService.findDocumentId("GENERAL"),null);
+            return new ResponseEntity(u, HttpStatus.CREATED);
 
     }
 
@@ -140,20 +142,44 @@ public class UserService {
 
     public ResponseEntity getAllUser() throws Exception{
         List<User> userList=userRepo.findAll();
-        for (User user:userList) {
-            user.setProfileImageId(null);
-        }
-        AllUserData allUserData=new AllUserData();
-        allUserData.setData(userList);
-        return new ResponseEntity(allUserData
+        return new ResponseEntity(userList
                 ,HttpStatus.OK);
     }
 
 
     public ResponseEntity addUpdateUserData(List<UserData> userDataList,String userId) throws Exception{
-        if(!isUserExistById(userId))
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
         return new ResponseEntity(userDataService.saveAll(userDataList),HttpStatus.OK);
+    }
+
+    public List<UserData> getUserData(String userId, String documentId){
+       List<SupportedFields> sf= supportedFieldsService.findAllByDocumentId(documentId);
+       Map<String,String> map=new HashMap<>();
+        for (SupportedFields s:sf) {
+            map.put(s.get_id(),s.getFieldName());
+        }
+
+
+       List<UserData> userDataList= userDataService.findAllByUserId(userId);
+       Set<String> set=new HashSet<>();
+        for (UserData ud:userDataList) {
+            set.add(ud.getFieldId());
+            ud.setFieldName(map.get(ud.getFieldId()));
+        }
+
+        for (SupportedFields s:sf) {
+           if(!set.contains(s.get_id()))
+           {
+               UserData ud=new UserData();
+               ud.setFieldId(s.get_id());
+               ud.setFieldName(s.getFieldName());
+               ud.setDocumentId(s.getDocumentId());
+               userDataList.add(ud);
+           }
+        }
+
+      return userDataList;
+
+
     }
 
 

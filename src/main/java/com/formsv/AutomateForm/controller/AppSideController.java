@@ -126,7 +126,7 @@ public class AppSideController {
         headers.add(Constants.TRANSACTIONID.value, ui.get_id());
        if( !userService.isFamilyExist(mobileNumber) )
        {
-         res=new ResponseEntity(ExceptionConstants.NOFAMILY,headers,HttpStatus.BAD_REQUEST);
+         res=new ResponseEntity(ExceptionConstants.NOFAMILY.value,headers,HttpStatus.BAD_REQUEST);
           ui.setResponse(res);
        }
        else {
@@ -144,7 +144,7 @@ public class AppSideController {
     @PostMapping("/createUser/{userName}/{mobileNumber}")
     public ResponseEntity<String> createUser(@PathVariable("userName") String userName,@PathVariable("mobileNumber") String mobileNumber,@RequestParam(value = "profileImage",required = false) MultipartFile profileImage ) throws Exception {
         if(userService.isFamilyExist(mobileNumber))
-            return new ResponseEntity(ExceptionConstants.DATAALREADYEXIST,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.DATAALREADYEXIST.value,HttpStatus.BAD_REQUEST);
         User user=new User();
         user.setParent(true);
         user.setUserName(userName);
@@ -153,6 +153,7 @@ public class AppSideController {
         user.setProfileImageId(imageService.addImage(profileImage));
         user.setCreatedAt(new Date());
         user.setModifiedAt(user.getCreatedAt());
+
         return userService.createUser(user);
     }
 
@@ -160,13 +161,13 @@ public class AppSideController {
     public ResponseEntity<String> addMember(@PathVariable("userId") String userId,@PathVariable("userName") String userName,@PathVariable("mobileNumber") String mobileNumber,@RequestParam(value = "profileImage",required = false) MultipartFile profileImage ) throws Exception {
         try {
             if (userService.isUserLocked(userId))
-                return new ResponseEntity(ExceptionConstants.USERLOCKED, HttpStatus.CONFLICT);
+                return new ResponseEntity(ExceptionConstants.USERLOCKED.value, HttpStatus.CONFLICT);
         }catch (NullPointerException e){
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         }
         User existingParent=userService.findById(userId);
         if( !existingParent.getMobileNumber().equals(mobileNumber))
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         //Setting Lock
         userService.setLock(userId);
         User user=new User();
@@ -191,9 +192,9 @@ public class AppSideController {
     public ResponseEntity updateUser(@PathVariable("userId") String userId,@RequestParam(value = "profileImage",required = false) MultipartFile profileImage ,@PathVariable("userName") String userName) throws Exception {
         try {
             if (userService.isUserLocked(userId))
-                return new ResponseEntity(ExceptionConstants.USERLOCKED, HttpStatus.CONFLICT);
+                return new ResponseEntity(ExceptionConstants.USERLOCKED.value, HttpStatus.CONFLICT);
         }catch (NullPointerException e){
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         }
               User u=null;
                userService.setLock(userId);
@@ -219,9 +220,9 @@ public class AppSideController {
     public ResponseEntity updateMobileNumber(@PathVariable("userId") String userId,@PathVariable("mobileNumber") String mobileNumber) throws Exception {
         try {
             if (userService.isUserLocked(userId))
-                return new ResponseEntity(ExceptionConstants.USERLOCKED, HttpStatus.CONFLICT);
+                return new ResponseEntity(ExceptionConstants.USERLOCKED.value, HttpStatus.CONFLICT);
         }catch (NullPointerException e){
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         }
         List<User> u=null;
              userService.setLock(userId);
@@ -239,7 +240,7 @@ public class AppSideController {
     @GetMapping("/getAllForms/{userId}")
     public ResponseEntity getAllFormsOfUser(@PathVariable("userId") String userId) throws Exception {
         if(!userService.isUserExistById(userId))
-            return new ResponseEntity("No User Exist",HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         return formService.getAllFormsOfUser(userId);
     }
 
@@ -247,9 +248,9 @@ public class AppSideController {
     public ResponseEntity applyForm(@PathVariable("formId") String formid,@PathVariable("userId") String userId) throws Exception {
         try {
             if (userService.isUserLocked(userId))
-                return new ResponseEntity(ExceptionConstants.USERLOCKED, HttpStatus.CONFLICT);
+                return new ResponseEntity(ExceptionConstants.USERLOCKED.value, HttpStatus.CONFLICT);
         }catch (NullPointerException e){
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         }
         userService.setLock(userId);
         AppliedForm appliedForm = new AppliedForm();
@@ -267,13 +268,15 @@ public class AppSideController {
 
     @PostMapping("/uploadSingleImage/{userId}/{documentId}")
     public ResponseEntity addDocuments(@PathVariable("userId") String userId,
-                                       @RequestParam("document") MultipartFile document,@PathVariable("documentId") String documentId)
+                                       @RequestParam(value = "document") MultipartFile document,@PathVariable("documentId") String documentId)
             throws Exception {
+       if(document==null || document.isEmpty())
+           return new ResponseEntity(ExceptionConstants.NODOCUMENT.value,HttpStatus.BAD_REQUEST);
         try {
             if (userService.isUserLocked(userId))
-                return new ResponseEntity(ExceptionConstants.USERLOCKED, HttpStatus.CONFLICT);
+                return new ResponseEntity(ExceptionConstants.USERLOCKED.value, HttpStatus.CONFLICT);
         }catch (NullPointerException e){
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         }
         ResponseEntity r=null;
         userService.setLock(userId);
@@ -292,9 +295,9 @@ public class AppSideController {
     public ResponseEntity updateDocument(@PathVariable("userId") String userId,@RequestParam("document") MultipartFile document,@PathVariable("documentId") String documentId) throws Exception {
         try {
             if (userService.isUserLocked(userId))
-                return new ResponseEntity(ExceptionConstants.USERLOCKED, HttpStatus.CONFLICT);
+                return new ResponseEntity(ExceptionConstants.USERLOCKED.value, HttpStatus.CONFLICT);
         }catch (NullPointerException e){
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         }
         UserDocuments d=null;
           userService.setLock(userId);
@@ -319,7 +322,7 @@ public class AppSideController {
     @GetMapping("/getRequiredDocument/{userId}/{formId}")
     public ResponseEntity getRequiredDocument(@PathVariable("userId") String userId,@PathVariable("formId") String formId){
         if(!userService.isUserExistById(userId))
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         return userService.getRequiredDocument(userId,formId);
     }
 
@@ -333,12 +336,12 @@ public class AppSideController {
     @GetMapping("/getAllDocumentsOfUser/{userId}")
     public  ResponseEntity getAllDocumentsOfUser(@PathVariable("userId") String userId) throws IOException {
          if(!userService.isUserExistById(userId))
-             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+             return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
          return new ResponseEntity(userDocumentService.getAllUserDocuments(userId), HttpStatus.OK);
     }
 
     /**
-     * Get All Supported Documents Of System which can be uploaded by User
+     * Get All Supported Documents Of System which can be uploaded by User Used In DropDown
      * @return
      */
     @GetMapping("/getAllSupportedDocuments/{userId}")
@@ -350,9 +353,9 @@ public class AppSideController {
     public ResponseEntity deleteDocument(@PathVariable("userId") String userId,@PathVariable("documentId") String documentId) throws Exception {
         try {
             if (userService.isUserLocked(userId))
-                return new ResponseEntity(ExceptionConstants.USERLOCKED, HttpStatus.CONFLICT);
+                return new ResponseEntity(ExceptionConstants.USERLOCKED.value, HttpStatus.CONFLICT);
         }catch (NullPointerException e){
-            return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         }
            userService.setLock(userId);
         try {
@@ -368,8 +371,8 @@ public class AppSideController {
 
     @GetMapping("/photos/{userid}/{id}")
     public ResponseEntity getImage(@PathVariable("userid") String userid,@PathVariable("id") String id) {
-       if(userService.isUserExistById(userid))
-           return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
+       if(!userService.isUserExistById(userid))
+           return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
         Image photo = imageService.getImage(id);
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo.getImage());
     }
@@ -414,7 +417,36 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf().disable()
-                .authorizeRequests().antMatchers("/authenticate","/getFamily/**","/createUser/**/**").permitAll().
+                .authorizeRequests().antMatchers("/authenticate",
+                        "/getFamily/**",
+                        "/createUser/**/**",
+                        "/photos/**/**",
+                "/deleteDocument/**/**",
+                "/getAllSupportedDocuments/**",
+                "/getAllDocumentsOfUser/**",
+                        "/getRequiredDocument/**/**",
+                "updateDocuments/**/**",
+                "/uploadSingleImage/**/**",
+                "/submitForm/**/**",
+                "/getAllForms/**",
+                "/updateMobileNumber/**/**",
+                "/updateUser/**/**",
+                "/addNewMember/**/**/**",
+
+
+
+   //   Employee Side APIS
+               "/getAllSupportedDoc",
+                "/createForm",
+                "/updateForm/**",
+                "/addRequiredDocuments/**",
+                "/deleteRequiredDocuments/**",
+                "/getAllUsers",
+                "/createSupportedDoc",
+                "/getSupportedFields/**",
+                "/getUserData/user/**/document/**",
+                "/storeUserData/**"
+                ).permitAll().
                 anyRequest().authenticated().and().
                 exceptionHandling().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);

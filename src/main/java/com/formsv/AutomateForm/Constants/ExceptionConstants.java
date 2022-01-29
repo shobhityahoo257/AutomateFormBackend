@@ -12,7 +12,8 @@ ExceptionConstants {
     USERLOCKED("User is Currently Locked"),
     NOFAMILY("Family Doesn't Exist"),
     NODOCUMENT("Document Doesn't Exist"),
-    EMPTYBODY("Empty Body");
+    EMPTYBODY("Empty Body"),
+    NODOCUMENTINPARAM("Please add document in param");
 
 
     public final String value;

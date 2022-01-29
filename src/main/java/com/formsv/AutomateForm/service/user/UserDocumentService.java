@@ -4,6 +4,7 @@ package com.formsv.AutomateForm.service.user;
 import com.formsv.AutomateForm.model.image.Image;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.user.UserDocuments;
+import com.formsv.AutomateForm.repository.SupportedDocRepo;
 import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.service.SupportedDocService;
 import com.formsv.AutomateForm.service.image.ImageService;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserDocumentService {
@@ -22,12 +23,14 @@ public class UserDocumentService {
     private final  UserDocumentsRepo userDocumentsRepo;
     private final   SupportedDocService supportedDocService;
     private final ImageService imageService;
+    private final SupportedDocRepo supportedDocRepo;
 
     @Autowired
-    public UserDocumentService(UserDocumentsRepo userDocumentsRepo, SupportedDocService supportedDocService, ImageService imageService) {
+    public UserDocumentService(UserDocumentsRepo userDocumentsRepo, SupportedDocService supportedDocService, ImageService imageService, SupportedDocRepo supportedDocRepo) {
         this.userDocumentsRepo = userDocumentsRepo;
         this.supportedDocService = supportedDocService;
         this.imageService = imageService;
+        this.supportedDocRepo = supportedDocRepo;
     }
 
     public ResponseEntity addDocument(String userId, String documentId, MultipartFile file) throws Exception {
@@ -36,8 +39,8 @@ public class UserDocumentService {
             return new ResponseEntity("Document Doesn't Exist with given documentId", HttpStatus.BAD_REQUEST);
         UserDocuments doc = new UserDocuments();
         doc.setDocumentId(documentId);
-        doc.setDocumentName(supportedDoc.getDocName());
-        doc.setImage( imageService.addImage(file));
+        if(file!=null)
+        doc.setImageID( imageService.addImage(file));
         doc.setUserId(userId);
         try {
             return new ResponseEntity(userDocumentsRepo.save(doc), HttpStatus.CREATED);
@@ -51,10 +54,18 @@ public class UserDocumentService {
         List<UserDocuments> doc= userDocumentsRepo.findByUserId(userId);
         if(doc==null|| doc.size()==0)
             return doc;
-        for (int i=0;i<doc.size();i++)
+        List<String> ids=new ArrayList<>();
+        for(UserDocuments d:doc)
         {
-            doc.get(i).setImage(null);
+            ids.add(d.getDocumentId());
         }
+      List<SupportedDoc> l=  supportedDocRepo.findAllBy_idIsIn(ids);
+        Map<String,String> map=new HashMap<>();
+        for (SupportedDoc sd:l){
+            map.put(sd.get_id(),sd.getDocName());
+        }
+         for(int i=0;i< doc.size();i++)
+             doc.get(i).setDocumentName(map.get(doc.get(i).getDocumentId()));
         return doc;
     }
 
@@ -65,7 +76,7 @@ public class UserDocumentService {
 
     public UserDocuments updateUserDocument(String userId, String documentId, MultipartFile f) throws IOException {
         UserDocuments ud=userDocumentsRepo.getByUserIdAndDocumentId(userId,documentId);
-        Image image=new Image(ud.getImage(),f.getBytes());
+        Image image=new Image(ud.getImageID(),f.getBytes());
         imageService.saveImage(image);
         return ud;
     }
@@ -73,5 +84,6 @@ public class UserDocumentService {
     public List<UserDocuments> findByUserId(String userId){
         return userDocumentsRepo.findByUserId(userId);
     }
+
 
 }

@@ -1,11 +1,11 @@
 package com.formsv.AutomateForm.service;
 
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
-import com.formsv.AutomateForm.model.form.FormIdsPojo;
 import com.formsv.AutomateForm.model.form.FormRequiredDocument;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.user.UserDocuments;
 import com.formsv.AutomateForm.repository.SupportedDocRepo;
+import com.formsv.AutomateForm.repository.form.FormRequiredDocumentRepo;
 import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.service.form.FormRequiredDocumentService;
 import com.formsv.AutomateForm.service.form.FormService;
@@ -26,23 +26,25 @@ public class SupportedDocService {
     private final FormRequiredDocumentService formRequiredDocumentService;
     private final FormService formService;
     private final UserDocumentsRepo userDocumentsRepo;
+    private final FormRequiredDocumentRepo formRequiredDocumentRepo;
 
     @Autowired
-    public SupportedDocService(SupportedDocRepo supportedDocRepo, FormRequiredDocumentService formRequiredDocumentService, FormService formService, UserDocumentsRepo userDocumentsRepo) {
+    public SupportedDocService(SupportedDocRepo supportedDocRepo, FormRequiredDocumentService formRequiredDocumentService, FormService formService, UserDocumentsRepo userDocumentsRepo, FormRequiredDocumentRepo formRequiredDocumentRepo) {
         this.supportedDocRepo = supportedDocRepo;
         this.formRequiredDocumentService = formRequiredDocumentService;
         this.formService = formService;
         this.userDocumentsRepo = userDocumentsRepo;
+        this.formRequiredDocumentRepo = formRequiredDocumentRepo;
     }
 
 
-    public ResponseEntity createSupportedDoc(List<SupportedDoc> list) {
+    public String createSupportedDoc(SupportedDoc supportedDoc) throws Exception {
         try {
-            List<SupportedDoc> l = supportedDocRepo.insert(list);
-            return new ResponseEntity(l, HttpStatus.CREATED);
+            SupportedDoc l = supportedDocRepo.save(supportedDoc);
+            return l.get_id();
         }
         catch (org.springframework.dao.DuplicateKeyException e) {
-            return new ResponseEntity(ExceptionConstants.DATAALREADYEXIST.value, HttpStatus.BAD_REQUEST);
+            throw new Exception(ExceptionConstants.DATAALREADYEXIST.value);
         }
     }
 
@@ -53,35 +55,39 @@ public class SupportedDocService {
          return false;
     }
 
-    public ResponseEntity addSupportedDocumentforForm(String formId, FormIdsPojo rdoc) throws  Exception{
+    public ResponseEntity addSupportedDocumentforForm(String formId, List<FormRequiredDocument> rdoc) throws  Exception{
         //Validate if Form Exist
         if(!formService.isFormExist(formId) )
             return new ResponseEntity("Form Doesn't Exist",HttpStatus.BAD_REQUEST);
-        //Validate if Form Exist
-        if(!formService.isFormExist(formId) )
-            return new ResponseEntity("Form Doesn't Exist",HttpStatus.BAD_REQUEST);
-        formRequiredDocumentService.deleteAllByFormId(formId);
 
+       // formRequiredDocumentService.saveAll(rdoc);
+        int i=0;
         List<String> ids=new ArrayList<>();
-        for (FormIdsPojo.SupportedDocument doc:rdoc.getList()) {
+        for (FormRequiredDocument doc:rdoc) {
             ids.add(doc.getDocumentId());
+            rdoc.get(i).setFormId(formId);
+            i++;
         }
-
-        List<FormRequiredDocument> formRequiredDocument=new ArrayList<>();
-
             if(isAllDocumentExists(ids)) {
-                for (int i=0;i<ids.size();i++) {
-                    formRequiredDocument.add(new FormRequiredDocument(formId, ids.get(i),rdoc.getList().get(i).getDocumentName()));
-                }
                 try {
-                    return new ResponseEntity(formRequiredDocumentService.saveAll(formRequiredDocument), HttpStatus.CREATED);
+                    return new ResponseEntity(formRequiredDocumentService.saveAll(rdoc), HttpStatus.CREATED);
                 } catch (org.springframework.dao.DuplicateKeyException e){
                 return new ResponseEntity("Data Already Exist", HttpStatus.BAD_REQUEST);
                 }
-
             }
             else
                 return new ResponseEntity("One Of the Document is not Supported",HttpStatus.BAD_REQUEST);
+    }
+
+    public void deleteRequiredDocument(String formId,List<FormRequiredDocument> requiredDocuments) throws Exception{
+            if(requiredDocuments==null || requiredDocuments.size()==0)
+                return;
+        for (int i=0;i< requiredDocuments.size();i++) {
+            requiredDocuments.get(i).setFormId(formId);
+            if(requiredDocuments.get(i).get_id()==null)
+                throw new Exception("_id Cant be null");
+        }
+        formRequiredDocumentRepo.deleteAll(requiredDocuments);
     }
 
     public boolean isDocumentExistById(String id){
@@ -131,4 +137,11 @@ public class SupportedDocService {
         return supportedDocRepo.findAllBy_idIsIn(ids);
     }
 
+    public List<SupportedDoc> findAll(){
+        return supportedDocRepo.findAll();
+    }
+
+    public  String findDocumentId(String documentName){
+        return supportedDocRepo.findByDocName(documentName).get_id();
+    }
 }

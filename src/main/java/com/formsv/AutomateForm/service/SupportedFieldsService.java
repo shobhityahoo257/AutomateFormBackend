@@ -43,4 +43,13 @@ public class SupportedFieldsService {
    public List<SupportedFields> findAllByFieldNameIsIn(List<String > fieldsName){
        return   supportedFieldsRepo.findAllByFieldNameIsIn(fieldsName);
    }
+
+
+   public List<SupportedFields> findAllByDocumentId(String documentId){
+        return supportedFieldsRepo.findAllByDocumentId(documentId);
+   }
+
+   public void deleteAllByDocumentId(String documentId){
+        supportedFieldsRepo.deleteAllByDocumentId(documentId);
+   }
 }

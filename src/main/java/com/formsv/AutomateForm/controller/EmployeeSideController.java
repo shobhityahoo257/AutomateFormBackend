@@ -4,8 +4,11 @@ import com.formsv.AutomateForm.Constants.Constants;
 import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.Form;
 import com.formsv.AutomateForm.model.form.FormIdsPojo;
+import com.formsv.AutomateForm.model.form.FormRequiredDocument;
+import com.formsv.AutomateForm.model.requestModel.SupportedDocRequest;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
+import com.formsv.AutomateForm.model.user.MultipleUserData;
 import com.formsv.AutomateForm.model.user.UserData;
 import com.formsv.AutomateForm.service.*;
 import com.formsv.AutomateForm.service.form.AppliedFormService;
@@ -23,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -57,20 +61,36 @@ public class EmployeeSideController {
            return userService.getAllUser();
      }
 
+     @GetMapping("/getUserData/user/{userId}/document/{documentId}")
+     public ResponseEntity getUserData(@PathVariable("userId") String userid,@PathVariable("documentId") String documentId) throws Exception {
+             if(!userService.isUserExistById(userid))
+                 return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
+             if(!supportedDocService.isDocumentExistById(documentId))
+                 return new ResponseEntity(ExceptionConstants.NODOCUMENT.value,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(userService.getUserData(userid,documentId),HttpStatus.OK);
+     }
 
 
     /**
      *  this is used to to add or update existing userData
-     * @param userDataList
+     * @param
      * @param userid
      * @return
      * @throws Exception
      */
-    @PostMapping("/storeUserData/{userid}")
-    public ResponseEntity storeUserData(@RequestBody List<UserData> userDataList,@PathVariable("userId") String userid) throws Exception {
+    @PostMapping("/storeUserData/{userId}")
+    public ResponseEntity storeUserData(@RequestBody MultipleUserData multipleUserData, @PathVariable("userId") String userid) throws Exception {
         if(!userService.isUserExistById(userid))
             return new ResponseEntity(ExceptionConstants.USERNOTFOUND,HttpStatus.BAD_REQUEST);
-        return userService.addUpdateUserData(userDataList,userid);
+        if(!supportedDocService.isDocumentExistById(multipleUserData.getDocumentId()))
+            return new ResponseEntity(ExceptionConstants.NODOCUMENT.value,HttpStatus.BAD_REQUEST);
+        for (UserData ud: multipleUserData.getUserDataList()) {
+            ud.setUserId(userid);
+            ud.setDocumentId(multipleUserData.getDocumentId());
+        }
+        //Code to check iF fields are supported by the Document
+
+        return userService.addUpdateUserData(multipleUserData.getUserDataList(),userid);
     }
 
     @DeleteMapping("/deleteSingleUserField/{userId}/{fieldId}")
@@ -94,59 +114,6 @@ public class EmployeeSideController {
     }
 
 
-//    @PutMapping("/updateUserData")
-//    public ResponseEntity updateUserData(@RequestBody UserData userData) {
-//        try {
-//            return userDataService.updateUserData(userData);
-//        } catch (Exception e) {
-//            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
-
-    /**
-     * This api is used toCreate/update Supported Fields
-     * @param list
-     * @param documentId
-     * @return
-     */
-    @PostMapping("/createSupportedFields/{documentId}")
-    public ResponseEntity createSupportedFields(@RequestBody(required = true) List<SupportedFields> list,@PathVariable("documentId") String documentId) {
-           if( !supportedDocService.isDocumentExistById(documentId))
-               return new ResponseEntity(ExceptionConstants.NODOCUMENT,HttpStatus.BAD_REQUEST);
-           if(list.size()==0)
-               return new ResponseEntity(ExceptionConstants.EMPTYBODY,HttpStatus.BAD_REQUEST);
-        try {
-            return supportedFieldsService.createSupportedFields(list,documentId);
-        } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR,HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
-
-    @PostMapping("/createSupportedDoc")
-    public ResponseEntity createSupportedDoc(@RequestBody(required = true) List<SupportedDoc> list) {
-        try {
-            return supportedDocService.createSupportedDoc(list);
-        } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @PutMapping("/updateSupportedDoc/{documentId}")
-    public ResponseEntity updateSupportedDoc(@PathVariable("documentId") String documentId,@RequestBody SupportedDoc doc){
-        if(!supportedDocService.isDocumentExistById(documentId))
-            return new ResponseEntity(ExceptionConstants.NODOCUMENT,HttpStatus.BAD_REQUEST);
-        return new ResponseEntity(supportedDocService.updateSupportedDoc(doc),HttpStatus.BAD_REQUEST);
-    }
-
-
-    /**
-     * CreateForm
-     * @param f
-     * @return
-     * @throws Exception
-     */
 
 
     @PostMapping("/createForm")
@@ -162,6 +129,7 @@ public class EmployeeSideController {
     }
 
 
+
     /**
      * update Form Data
      * @param f
@@ -172,9 +140,10 @@ public class EmployeeSideController {
 
     @PutMapping("/updateForm/{formId}")
     public ResponseEntity updateForm(@RequestBody Form f,@PathVariable("formId") String formId) throws Exception {
+        if(! formService.isFormExist(formId))
+            return new ResponseEntity(ExceptionConstants.FORMNOTEXIST,HttpStatus.BAD_REQUEST);
         f.setModifiedAt(new Date());
-        if(f.get_id()==null)
-            f.set_id(formId);
+        f.set_id(formId);
         return formService.updateFormData(formId,f);
     }
 
@@ -186,22 +155,67 @@ public class EmployeeSideController {
 
     @DeleteMapping("/deleteForm/{formId}")
     public ResponseEntity deleteForm(@PathVariable("formId") String formId) throws Exception {
+        if(! formService.isFormExist(formId))
+            return new ResponseEntity(ExceptionConstants.FORMNOTEXIST,HttpStatus.BAD_REQUEST);
         return formService.deleteForm(formId);
     }
 
     @PostMapping("/addRequiredDocuments/{formId}")
-    public ResponseEntity addRequiredDocuments(@PathVariable("formId") String formId,@RequestBody FormIdsPojo rdoc) throws Exception {
+    public ResponseEntity addRequiredDocuments(@PathVariable("formId") String formId,@RequestBody List<FormRequiredDocument> rdoc) throws Exception {
         return supportedDocService.addSupportedDocumentforForm(formId,rdoc);
     }
 
-
-    @PostMapping("/addUserData/{userId}")
-    public ResponseEntity addUserData(@PathVariable("userId") String userId,
-                                       @RequestParam("document") MultipartFile document)      throws Exception {
-
-        return userService.storeUserData(userId,document);
-
+    @DeleteMapping("/deleteRequiredDocuments/{formId}")
+    public ResponseEntity deleteRequiredDocument(@PathVariable("formId") String formId,@RequestBody List<FormRequiredDocument> rdoc) throws Exception {
+        if(! formService.isFormExist(formId))
+            return new ResponseEntity(ExceptionConstants.FORMNOTEXIST,HttpStatus.BAD_REQUEST);
+        try {
+            supportedDocService.deleteRequiredDocument(formId, rdoc);
+        }catch (Exception e)
+        {
+            return new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity(Constants.DELETED,HttpStatus.OK);
     }
+
+
+
+
+    @PostMapping("/createSupportedDoc")
+    public ResponseEntity createUpdateSupportedDoc(@RequestBody SupportedDocRequest supportedDocRequest) throws Exception {
+        SupportedDoc supportedDoc=new SupportedDoc(supportedDocRequest.get_id(),supportedDocRequest.getDocName());
+       String docId= supportedDocService.createSupportedDoc(supportedDoc);
+        if(supportedDocRequest.get_id()!=null)
+        supportedFieldsService.deleteAllByDocumentId(supportedDocRequest.get_id());
+       return supportedFieldsService.createSupportedFields(supportedDocRequest.getFieldsList(),docId);
+    }
+
+//    @PutMapping("/updateSupportedDoc/{documentId}")
+//    public ResponseEntity updateSupportedDoc(@PathVariable("documentId") String documentId,@RequestBody SupportedDoc doc){
+//        if(!supportedDocService.isDocumentExistById(documentId))
+//            return new ResponseEntity(ExceptionConstants.NODOCUMENT,HttpStatus.BAD_REQUEST);
+//        return new ResponseEntity(supportedDocService.updateSupportedDoc(doc),HttpStatus.BAD_REQUEST);
+//    }
+
+    @GetMapping("/getAllSupportedDoc")
+    public ResponseEntity getAllSupportedDoc(){
+        return new ResponseEntity(supportedDocService.findAll(),HttpStatus.OK);
+    }
+
+    @GetMapping("/getSupportedFields/{documentId}")
+    public ResponseEntity getSupportedFields(@PathVariable("documentId") String documentId){
+       return new ResponseEntity(supportedFieldsService.findAllByDocumentId(documentId),HttpStatus.OK);
+    }
+
+
+//
+//    @PostMapping("/addUserData/{userId}")
+//    public ResponseEntity addUserData(@PathVariable("userId") String userId,
+//                                       @RequestParam("document") MultipartFile document)      throws Exception {
+//
+//        return userService.storeUserData(userId,document);
+//
+//    }
 
     @GetMapping("/api/download/csv/{userId}")
     public void downloadFile(HttpServletResponse response,@PathVariable("userId") String userId ) throws IOException {
@@ -213,13 +227,6 @@ public class EmployeeSideController {
         response.setHeader(headerKey,headerValue);
         userService.loadFile(response.getWriter(),userId);
     }
-
-
-
-
-
-
-
 
 
 }
