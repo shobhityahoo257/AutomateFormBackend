@@ -445,7 +445,9 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 "/createSupportedDoc",
                 "/getSupportedFields/**",
                 "/getUserData/user/**/document/**",
-                "/storeUserData/**"
+                "/storeUserData/**",
+                "/updateRequiredDocument/**",
+                "/getFormDetails/**"
                 ).permitAll().
                 anyRequest().authenticated().and().
                 exceptionHandling().and().sessionManagement()

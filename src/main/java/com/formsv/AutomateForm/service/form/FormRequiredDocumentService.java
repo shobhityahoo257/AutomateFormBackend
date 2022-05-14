@@ -34,4 +34,12 @@ public class FormRequiredDocumentService {
     {
         return formRequiredDocumentRepo.saveAll(list);
     }
+
+    public FormRequiredDocument getFormRequiredDocumentByFormIdAndDocId(String formId,String docId){
+                   return formRequiredDocumentRepo.findByFormIdAndDocumentId(formId,docId);
+    }
+
+    public FormRequiredDocument update(FormRequiredDocument f){
+     return formRequiredDocumentRepo.save(f);
+    }
 }

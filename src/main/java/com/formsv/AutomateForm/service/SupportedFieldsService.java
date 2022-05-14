@@ -49,6 +49,10 @@ public class SupportedFieldsService {
         return supportedFieldsRepo.findAllByDocumentId(documentId);
    }
 
+   public List<SupportedFields> findAll(){
+       return supportedFieldsRepo.findAll();
+   }
+
    public void deleteAllByDocumentId(String documentId){
         supportedFieldsRepo.deleteAllByDocumentId(documentId);
    }

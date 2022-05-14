@@ -11,4 +11,6 @@ public interface FormRequiredDocumentRepo extends MongoRepository<FormRequiredDo
     List<FormRequiredDocument>  findByFormId(String formId);
     void deleteAllByFormId(String list);
     void deleteByFormIdAndDocumentId(String formId,String documentId);
+
+    FormRequiredDocument findByFormIdAndDocumentId(String formId,String documentId);
 }

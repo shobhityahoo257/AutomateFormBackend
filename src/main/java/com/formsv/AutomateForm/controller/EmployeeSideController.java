@@ -12,6 +12,7 @@ import com.formsv.AutomateForm.model.user.MultipleUserData;
 import com.formsv.AutomateForm.model.user.UserData;
 import com.formsv.AutomateForm.service.*;
 import com.formsv.AutomateForm.service.form.AppliedFormService;
+import com.formsv.AutomateForm.service.form.FormRequiredDocumentService;
 import com.formsv.AutomateForm.service.form.FormService;
 import com.formsv.AutomateForm.service.image.ImageService;
 import com.formsv.AutomateForm.service.user.UserDataService;
@@ -28,6 +29,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -48,6 +50,9 @@ public class EmployeeSideController {
     ImageService imageService;
     @Autowired
     FormService formService;
+
+    @Autowired
+    FormRequiredDocumentService formRequiredDocumentService;
 
 
     @GetMapping("/")
@@ -165,12 +170,12 @@ public class EmployeeSideController {
         return supportedDocService.addSupportedDocumentforForm(formId,rdoc);
     }
 
-    @DeleteMapping("/deleteRequiredDocuments/{formId}")
-    public ResponseEntity deleteRequiredDocument(@PathVariable("formId") String formId,@RequestBody List<FormRequiredDocument> rdoc) throws Exception {
+    @DeleteMapping("/deleteRequiredDocuments/{formId}/{docId}")
+    public ResponseEntity deleteRequiredDocument(@PathVariable("formId") String formId,@PathVariable("docId") String docId) throws Exception {
         if(! formService.isFormExist(formId))
             return new ResponseEntity(ExceptionConstants.FORMNOTEXIST,HttpStatus.BAD_REQUEST);
         try {
-            supportedDocService.deleteRequiredDocument(formId, rdoc);
+            supportedDocService.deleteRequiredDocument(formId, docId);
         }catch (Exception e)
         {
             return new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
@@ -178,6 +183,23 @@ public class EmployeeSideController {
         return new ResponseEntity(Constants.DELETED,HttpStatus.OK);
     }
 
+@PutMapping("/updateRequiredDocument/{formId}")
+public ResponseEntity updateRequiredDocument(@PathVariable("formId") String formId,@RequestBody FormRequiredDocument doc) throws Exception {
+    if(! formService.isFormExist(formId))
+        return new ResponseEntity(ExceptionConstants.FORMNOTEXIST,HttpStatus.BAD_REQUEST);
+    List<FormRequiredDocument> f=new ArrayList<>();
+    f.add(doc);
+    try {
+       FormRequiredDocument rdoc= formRequiredDocumentService.getFormRequiredDocumentByFormIdAndDocId(formId,doc.getDocumentId());
+       doc.set_id(rdoc.get_id());
+       doc.setFormId(rdoc.getFormId());
+       return new ResponseEntity(formRequiredDocumentService.update(doc),HttpStatus.OK);
+    }catch (Exception e)
+    {
+        return new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+
+}
 
 
 
@@ -226,6 +248,31 @@ public class EmployeeSideController {
         String headerValue = "attachment; filename=userData_" + userId + ".csv";
         response.setHeader(headerKey,headerValue);
         userService.loadFile(response.getWriter(),userId);
+    }
+
+    @GetMapping("/getFormDetails/{formId}")
+    public ResponseEntity getFormDetails(@PathVariable("formId") String formId){
+        List<FormRequiredDocument> f=new ArrayList<>();
+        f=formRequiredDocumentService.findByFormId(formId);
+        List<SupportedDoc> l=supportedDocService.findAll();
+        HashMap<String,String> hm=new HashMap<>();
+        HashMap<String,String> hmf=new HashMap<>();
+        for (SupportedDoc s:l)
+            hm.put(s.get_id(),s.getDocName());
+        List<SupportedFields> ls=supportedFieldsService.findAll();
+        for(SupportedFields sf:ls)
+            hmf.put(sf.get_id(),sf.getFieldName());
+        for(int j=0;j<f.size();j++)
+            {
+                f.get(j).setDocumentName(hm.get(f.get(j).getDocumentId()));
+                if(f.get(j).getFieldIds()==null)
+                    continue;
+                for(int i=0;i<f.get(j).getFieldIds().size();i++)
+                {
+                    f.get(j).getFieldName().add(hmf.get(f.get(j).getFieldIds().get(i)));
+                }
+            }
+        return new ResponseEntity(f,HttpStatus.OK);
     }
 
 

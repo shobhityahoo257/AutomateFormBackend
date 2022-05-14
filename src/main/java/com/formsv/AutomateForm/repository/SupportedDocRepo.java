@@ -11,4 +11,5 @@ public interface SupportedDocRepo extends MongoRepository<SupportedDoc,String> {
   List<SupportedDoc> findAllBy_idIsIn(List<String> ids);
   SupportedDoc findBy_id(String id);
   SupportedDoc findByDocName(String docName);
+
 }

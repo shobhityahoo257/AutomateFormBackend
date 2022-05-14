@@ -79,15 +79,20 @@ public class SupportedDocService {
                 return new ResponseEntity("One Of the Document is not Supported",HttpStatus.BAD_REQUEST);
     }
 
-    public void deleteRequiredDocument(String formId,List<FormRequiredDocument> requiredDocuments) throws Exception{
-            if(requiredDocuments==null || requiredDocuments.size()==0)
-                return;
-        for (int i=0;i< requiredDocuments.size();i++) {
-            requiredDocuments.get(i).setFormId(formId);
-            if(requiredDocuments.get(i).get_id()==null)
-                throw new Exception("_id Cant be null");
-        }
-        formRequiredDocumentRepo.deleteAll(requiredDocuments);
+//    public void deleteRequiredDocument(String formId,List<FormRequiredDocument> requiredDocuments) throws Exception{
+//            if(requiredDocuments==null || requiredDocuments.size()==0)
+//                return;
+//        for (int i=0;i< requiredDocuments.size();i++) {
+//            requiredDocuments.get(i).setFormId(formId);
+//            if(requiredDocuments.get(i).get_id()==null)
+//                throw new Exception("_id Cant be null");
+//        }
+//        formRequiredDocumentRepo.deleteAll(requiredDocuments);
+//    }
+
+    public void deleteRequiredDocument(String formId,String requiredDocumentsId) throws Exception{
+
+        formRequiredDocumentRepo.deleteByFormIdAndDocumentId(formId,requiredDocumentsId);
     }
 
     public boolean isDocumentExistById(String id){
@@ -144,4 +149,6 @@ public class SupportedDocService {
     public  String findDocumentId(String documentName){
         return supportedDocRepo.findByDocName(documentName).get_id();
     }
+
+
 }
