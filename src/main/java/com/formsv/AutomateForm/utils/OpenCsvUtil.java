@@ -21,11 +21,7 @@ import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Copyright by https://loizenjs.com
- *
- * @author loizenjs.com
- */
+
 public class OpenCsvUtil {
     private static String csvExtension = "csv";
     private static String[] CSV_HEADER = { "id", "userId", "mobileNumber","userName"};

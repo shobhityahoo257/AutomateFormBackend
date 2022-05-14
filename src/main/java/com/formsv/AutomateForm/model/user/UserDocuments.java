@@ -24,6 +24,9 @@ public class UserDocuments {
     private String userId;
     private String documentId;
     private String imageID;
+    private String imageIdFront;
+    private String imageIdBack;
     private byte[] image;
     private String documentName;
+    private boolean isEditable=true;
 }

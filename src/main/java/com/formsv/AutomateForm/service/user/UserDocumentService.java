@@ -33,14 +33,15 @@ public class UserDocumentService {
         this.supportedDocRepo = supportedDocRepo;
     }
 
-    public ResponseEntity addDocument(String userId, String documentId, MultipartFile file) throws Exception {
+    public ResponseEntity addDocument(String userId, String documentId, MultipartFile fileFront,MultipartFile fileBack) throws Exception {
         SupportedDoc supportedDoc=supportedDocService.getById(documentId);
         if(supportedDoc==null)
             return new ResponseEntity("Document Doesn't Exist with given documentId", HttpStatus.BAD_REQUEST);
         UserDocuments doc = new UserDocuments();
         doc.setDocumentId(documentId);
-        if(file!=null)
-        doc.setImageID( imageService.addImage(file));
+        if(fileFront!=null)
+        doc.setImageIdFront( imageService.addImage(fileFront));
+        doc.setImageIdBack( imageService.addImage(fileBack));
         doc.setUserId(userId);
         try {
             return new ResponseEntity(userDocumentsRepo.save(doc), HttpStatus.CREATED);
