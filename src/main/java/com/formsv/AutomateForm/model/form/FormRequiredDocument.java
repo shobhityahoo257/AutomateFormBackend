@@ -20,10 +20,12 @@ public class FormRequiredDocument {
     private String formId;
     private String documentId;
     private String documentName;
+    private String fieldIds[];
 
-    public FormRequiredDocument(String formId, String documentId,String documentName){
+    public FormRequiredDocument(String formId, String documentId,String documentName,String fieldIds[]){
            this.formId=formId;
            this.documentId=documentId;
            this.documentName=documentName;
+           this.fieldIds=fieldIds;
     }
 }

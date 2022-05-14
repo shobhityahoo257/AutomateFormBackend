@@ -59,7 +59,7 @@ public class UserService {
              return new ResponseEntity("User is already Exist with Given Mobile Number", HttpStatus.BAD_REQUEST);
         user.setParent(true);
         User u=userRepo.save(user);
-//        userDocumentService.addDocument(u.get_id(),supportedDocService.findDocumentId("GENERAL"),null);
+       // userDocumentService.addDocument(u.get_id(),supportedDocService.findDocumentId("GENERAL"));
            return new ResponseEntity(u, HttpStatus.CREATED);
 
     }
