@@ -87,5 +87,10 @@ public class UserDocumentService {
         return userDocumentsRepo.findByUserId(userId);
     }
 
+     public boolean userDocumentExist(String userId,String documentId){
+       if( userDocumentsRepo.getByUserIdAndDocumentId(userId,documentId)!=null)
+           return true;
+       return false;
 
+    }
 }

@@ -9,13 +9,16 @@ import com.formsv.AutomateForm.model.requestModel.SupportedDocRequest;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
 import com.formsv.AutomateForm.model.user.MultipleUserData;
+import com.formsv.AutomateForm.model.user.User;
 import com.formsv.AutomateForm.model.user.UserData;
+import com.formsv.AutomateForm.model.user.UserDocuments;
 import com.formsv.AutomateForm.service.*;
 import com.formsv.AutomateForm.service.form.AppliedFormService;
 import com.formsv.AutomateForm.service.form.FormRequiredDocumentService;
 import com.formsv.AutomateForm.service.form.FormService;
 import com.formsv.AutomateForm.service.image.ImageService;
 import com.formsv.AutomateForm.service.user.UserDataService;
+import com.formsv.AutomateForm.service.user.UserDocumentService;
 import com.formsv.AutomateForm.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,10 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @CrossOrigin(origins = "*")
 @RestController()
@@ -54,6 +54,9 @@ public class EmployeeSideController {
     @Autowired
     FormRequiredDocumentService formRequiredDocumentService;
 
+    @Autowired
+    UserDocumentService userDocumentService;
+
 
     @GetMapping("/")
     public String hello() {
@@ -72,6 +75,8 @@ public class EmployeeSideController {
                  return new ResponseEntity(ExceptionConstants.USERNOTFOUND.value,HttpStatus.BAD_REQUEST);
              if(!supportedDocService.isDocumentExistById(documentId))
                  return new ResponseEntity(ExceptionConstants.NODOCUMENT.value,HttpStatus.BAD_REQUEST);
+             if(!userDocumentService.userDocumentExist(userid,documentId))
+                 return new ResponseEntity(ExceptionConstants.DOCUMENTDOESNOTEXIST.value,HttpStatus.BAD_REQUEST);
         return new ResponseEntity(userService.getUserData(userid,documentId),HttpStatus.OK);
      }
 
@@ -250,6 +255,11 @@ public ResponseEntity updateRequiredDocument(@PathVariable("formId") String form
         userService.loadFile(response.getWriter(),userId);
     }
 
+    /**
+     * Get All Required Documents and Required Fields to fill a form
+     * @param formId
+     * @return
+     */
     @GetMapping("/getFormDetails/{formId}")
     public ResponseEntity getFormDetails(@PathVariable("formId") String formId){
         List<FormRequiredDocument> f=new ArrayList<>();
@@ -274,6 +284,65 @@ public ResponseEntity updateRequiredDocument(@PathVariable("formId") String form
             }
         return new ResponseEntity(f,HttpStatus.OK);
     }
+
+    /**
+     * compareUserDataWithFormRequirement this is used to check if all the required data to fill a form is available for given user
+     * @param userId
+     * @param formId
+     * @return
+     */
+
+    @GetMapping("/compareUserDataWithFormRequirement/user/{userId}/form/{formId}")
+    public ResponseEntity compareUserDataWithFormRequirement(@PathVariable("userId") String userId,@PathVariable("formId") String formId) {
+        List<FormRequiredDocument> f=new ArrayList<>();
+        f=formRequiredDocumentService.findByFormId(formId);
+        List<SupportedDoc> l=supportedDocService.findAll();
+        HashMap<String,String> hm=new HashMap<>();
+        HashMap<String,String> hmf=new HashMap<>();
+        for (SupportedDoc s:l)
+            hm.put(s.get_id(),s.getDocName());
+        List<SupportedFields> ls=supportedFieldsService.findAll();
+        for(SupportedFields sf:ls)
+            hmf.put(sf.get_id(),sf.getFieldName());
+
+        List<UserData> ud=userDataService.findAllByUserId(userId);
+        Set<String> userDataSet = new HashSet<> ();
+        for (UserData u:ud)
+            userDataSet.add(u.getFieldId());
+
+        List<UserDocuments> userDocumentsList=userDocumentService.getAllUserDocuments(userId);
+        Set<String> userDocumentSet=new HashSet<>();
+        for(UserDocuments d:userDocumentsList)
+            userDocumentSet.add(d.getDocumentId());
+
+
+        for(int j=0;j<f.size();j++)
+        {
+            f.get(j).setDocumentName(hm.get(f.get(j).getDocumentId()));
+            if(userDocumentSet.contains(f.get(j).getDocumentId()))
+                f.get(j).setIsDocumentAvailable(true);
+            else
+                f.get(j).setIsDocumentAvailable(false);
+
+            if(f.get(j).getFieldIds()==null)
+                continue;
+            for(int i=0;i<f.get(j).getFieldIds().size();i++)
+            {
+                f.get(j).getFieldName().add(hmf.get(f.get(j).getFieldIds().get(i)));
+                if(userDataSet.contains(f.get(j).getFieldIds().get(i)))
+                f.get(j).getIsFieldAvailable().add(true);
+                else
+                    f.get(j).getIsFieldAvailable().add(false);
+            }
+        }
+
+        return new ResponseEntity(f,HttpStatus.OK);
+
+    }
+
+
+
+
 
 
 }

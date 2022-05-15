@@ -28,6 +28,10 @@ public class FormRequiredDocument {
     //this should be not stored in DB should be calculated at Run Time only
     private List<String> fieldName;
 
+    //this should be not stored in DB should be calculated at Run Time only
+    private Boolean isDocumentAvailable=null;
+    private List<Boolean> isFieldAvailable=null;
+
     public FormRequiredDocument(String formId, String documentId,String documentName,List<String> fieldIds,List<String> fieldName){
            this.formId=formId;
            this.documentId=documentId;
