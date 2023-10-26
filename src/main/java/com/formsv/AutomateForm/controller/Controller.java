@@ -186,6 +186,7 @@ This is used to add Required Documents for a form
 
      @GetMapping("/getAllUsers")
     public ResponseEntity getAllUser() throws Exception {
+         System.out.println("In getAllUsers");
            return userService.getAllUser();
      }
 
