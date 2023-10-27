@@ -8,6 +8,11 @@ import com.formsv.AutomateForm.repository.user.UserDataRepo;
 import com.formsv.AutomateForm.repository.user.UserDocumentsRepo;
 import com.formsv.AutomateForm.service.SupportedDocService;
 import com.formsv.AutomateForm.service.user.UserService;
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.*;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 import org.bson.BsonBinarySubType;
 import org.bson.types.Binary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +21,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 
 @Service
@@ -32,6 +43,7 @@ public class ImageService {
     SupportedDocService supportedDocService;
 
     public ResponseEntity addPhoto(String userId, String documentId, MultipartFile file) throws Exception {
+
            if( !userService.isUserExistById(userId))
                return new ResponseEntity("User Doesn't Exist with given userId",HttpStatus.BAD_REQUEST);
         SupportedDoc supportedDoc=supportedDocService.getById(documentId);
@@ -40,13 +52,40 @@ public class ImageService {
             UserDocuments doc = new UserDocuments();
             doc.setDocumentId(documentId);
             doc.setDocumentName(supportedDoc.getDocName());
-            doc.setImage( file.getBytes());
+           // doc.setImage( file.getBytes());
+            uploadFileToFirebaseStorage(file);
             doc.setUserId(userId);
             try {
                 return new ResponseEntity(userDocumentsRepo.save(doc), HttpStatus.CREATED);
             }catch (org.springframework.dao.DuplicateKeyException e){
                 return new ResponseEntity("Document Alredy Exist with same Document Id",HttpStatus.BAD_REQUEST);
             }
+
+    }
+
+    public String uploadFileToFirebaseStorage(MultipartFile multipartFile) throws IOException {
+        // Initialize Firebase Storage
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream("/src/main/java/com/formsv/AutomateForm/fillojafrontend-firebase-adminsdk-quj1e-af637e66bc.json"));
+        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+
+        // Generate a unique file name
+        String uniqueFileName = System.currentTimeMillis() + "_" + multipartFile.getOriginalFilename();
+
+        // Convert MultipartFile to a temporary File
+        File tempFile = File.createTempFile("temp", null);
+        multipartFile.transferTo(tempFile);
+
+
+        // Define the file destination in Firebase Storage
+        BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "uploads/" + uniqueFileName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(multipartFile.getContentType()).build();
+
+        // Upload the file
+        Blob blob = storage.create(blobInfo, new FileInputStream(tempFile));
+        tempFile.delete(); // Clean up temp file
+
+        System.out.println("File uploaded to Firebase Storage with URL: " + blob.getMediaLink());
+        return blob.getMediaLink();
     }
 
     public Image getPhoto(String id) {
