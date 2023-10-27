@@ -1,7 +1,6 @@
 package com.formsv.AutomateForm.model.form;
 
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -31,7 +30,7 @@ public class Form {
     private Integer fillingCharge;
     @NonNull
     private boolean enabled;
-    private boolean isUserApplied;
+    private boolean userApplied;
     private String formLink;
 
     private Date createdAt;

@@ -13,5 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AllFormData {
-    private List<Form> data;
+    private String userId;
+    private String userName;
+    private String mobileNumber;
+    private List<Form> formList;
 }

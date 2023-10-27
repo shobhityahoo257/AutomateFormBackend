@@ -80,7 +80,7 @@ public class FormService {
 
     public ResponseEntity getAllForms() throws Exception{
         List<Form> formList=formRepo.findAll();
-        AllFormData allFormData=new AllFormData(formList);
+        AllFormData allFormData=new AllFormData("userId","","",formList);
         return new ResponseEntity(allFormData,HttpStatus.OK);
     }
 
