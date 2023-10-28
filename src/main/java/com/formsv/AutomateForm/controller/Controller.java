@@ -74,6 +74,7 @@ public class Controller {
         user.setUserName(userName);
         user.setMobileNumber(mobileNumber);
        // user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
+        if(profileImage!=null)
         user.setProfileImage(profileImage.getBytes());
         user.setCreatedAt(new Date());
         user.setModifiedAt(user.getCreatedAt());
