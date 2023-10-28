@@ -112,6 +112,7 @@ public class UserService {
         List<String> ids=new ArrayList<>();
         for (UserDocuments document:userDoc) {
                     set.add(document.getDocumentId());
+                    set.add(document.getDocumentUrl());
         }
         for (FormRequiredDocument f:reqdoc) {
             RequiredDocumentResponse.Document docu=new RequiredDocumentResponse.Document();
@@ -133,7 +134,6 @@ public class UserService {
 
         for (int i=0;i<list.size();i++){
             list.get(i).setDocumentName(m.get(list.get(i).getDocumentId()));
-            list.get(i).setDocumentUrl(m.get(list.get(i).getDocumentUrl()));
         }
 
         RequiredDocumentResponse requiredDocumentResponse=new RequiredDocumentResponse(userId,formId,list);
