@@ -26,4 +26,5 @@ public class UserDocuments {
     private String documentId;
     private byte[] image;
     private String documentName;
+    private String documentUrl;
 }

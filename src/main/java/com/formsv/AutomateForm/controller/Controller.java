@@ -16,6 +16,8 @@ import com.formsv.AutomateForm.service.image.ImageService;
 import com.formsv.AutomateForm.service.user.UserDataService;
 import com.formsv.AutomateForm.service.user.UserService;
 import com.formsv.AutomateForm.utils.OpenCsvUtil;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.*;
 import org.bson.BsonBinarySubType;
 import org.bson.types.Binary;
 import org.json.JSONObject;
@@ -27,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -35,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @CrossOrigin(origins = "*")
 @RestController()
@@ -131,11 +136,35 @@ This is used to add Required Documents for a form
 
     @PostMapping("/uploadSingleImage/{userId}/{documentId}")
     public ResponseEntity addDocuments(@PathVariable("userId") String userId,
-                           @RequestParam("document") MultipartFile document,@PathVariable("documentId") String documentId)
-            throws Exception {
+                           @RequestParam("document") MultipartFile document,@PathVariable("documentId") String documentId) throws Exception {
         return imageService.addPhoto(userId,documentId,document);
     }
 
+    public String uploadFileToFirebaseStorage(MultipartFile multipartFile) throws IOException {
+        // Initialize Firebase Storage
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream("src/main/java/com/formsv/AutomateForm/fillojafrontend-firebase-adminsdk-quj1e-af637e66bc.json"));
+        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+
+        // Generate a unique file name
+        String uniqueFileName = System.currentTimeMillis() + "_" + multipartFile.getOriginalFilename();
+
+        // Convert MultipartFile to a temporary File
+        File tempFile = File.createTempFile("temp", null);
+        multipartFile.transferTo(tempFile);
+
+
+        // Define the file destination in Firebase Storage
+        BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "documents/" + uniqueFileName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(multipartFile.getContentType()).build();
+
+        // Upload the file
+        Blob blob = storage.create(blobInfo, new FileInputStream(tempFile));
+        tempFile.delete();// Clean up temp file
+
+        String downloadUrl = blob.getStorage().get(blob.getBlobId()).signUrl(365*1000, TimeUnit.DAYS).toString();
+
+        return downloadUrl;
+    }
 
     @GetMapping("/getRequiredDocument/{userId}/{formId}")
     public ResponseEntity getRequiredDocument(@PathVariable("userId") String userId,@PathVariable("formId") String formId){

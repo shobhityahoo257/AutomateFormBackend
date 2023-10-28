@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -52,20 +53,18 @@ public class ImageService {
             UserDocuments doc = new UserDocuments();
             doc.setDocumentId(documentId);
             doc.setDocumentName(supportedDoc.getDocName());
-           // doc.setImage( file.getBytes());
-            uploadFileToFirebaseStorage(file);
+            doc.setDocumentUrl(uploadFileToFirebaseStorage(file) );
             doc.setUserId(userId);
             try {
                 return new ResponseEntity(userDocumentsRepo.save(doc), HttpStatus.CREATED);
             }catch (org.springframework.dao.DuplicateKeyException e){
                 return new ResponseEntity("Document Alredy Exist with same Document Id",HttpStatus.BAD_REQUEST);
             }
-
     }
 
     public String uploadFileToFirebaseStorage(MultipartFile multipartFile) throws IOException {
         // Initialize Firebase Storage
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream("/src/main/java/com/formsv/AutomateForm/fillojafrontend-firebase-adminsdk-quj1e-af637e66bc.json"));
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream("src/main/java/com/formsv/AutomateForm/fillojafrontend-firebase-adminsdk-quj1e-af637e66bc.json"));
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
 
         // Generate a unique file name
@@ -77,15 +76,16 @@ public class ImageService {
 
 
         // Define the file destination in Firebase Storage
-        BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "uploads/" + uniqueFileName);
+        BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "documents/" + uniqueFileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(multipartFile.getContentType()).build();
 
         // Upload the file
         Blob blob = storage.create(blobInfo, new FileInputStream(tempFile));
-        tempFile.delete(); // Clean up temp file
+        tempFile.delete();// Clean up temp file
 
-        System.out.println("File uploaded to Firebase Storage with URL: " + blob.getMediaLink());
-        return blob.getMediaLink();
+        String downloadUrl = blob.getStorage().get(blob.getBlobId()).signUrl(365*1000, TimeUnit.DAYS).toString();
+
+        return downloadUrl;
     }
 
     public Image getPhoto(String id) {
