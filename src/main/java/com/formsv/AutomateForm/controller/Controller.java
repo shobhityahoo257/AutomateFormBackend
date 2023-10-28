@@ -67,8 +67,8 @@ public class Controller {
         return userService.getFamily(mobileNumber);
     }
 
-    @PostMapping("/createUser/{userName}/{mobileNumber}")
-    public ResponseEntity createUser(@PathVariable("userName") String userName,@PathVariable("mobileNumber") String mobileNumber,@RequestParam("profileImage") MultipartFile profileImage ) throws Exception {
+    @PostMapping("/createUser")
+    public ResponseEntity createUser(@RequestParam(value = "userName",required = false) String userName,@RequestParam("mobileNumber") String mobileNumber,@RequestParam(value = "profileImage", required = false) MultipartFile profileImage ) throws Exception {
         User user=new User();
         user.setParent(true);
         user.setUserName(userName);
