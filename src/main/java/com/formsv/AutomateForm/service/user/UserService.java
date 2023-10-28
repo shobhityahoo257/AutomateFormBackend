@@ -115,14 +115,16 @@ public class UserService {
                     set.add(document.getDocumentId());
                     hm.put(document.getDocumentId(),document.getDocumentUrl());
         }
+
+        System.out.println("HM IS "+ hm.toString());
         for (FormRequiredDocument f:reqdoc) {
             RequiredDocumentResponse.Document docu=new RequiredDocumentResponse.Document();
             docu.setDocumentId(f.getDocumentId());
             docu.setDocumentName(f.getDocumentName());
             if(set.contains(f.getDocumentId())){
                 docu.setUploadedByUser(true);
-                docu.setDocumentUrl("");
                 docu.setDocumentUrl(hm.get(f.getDocumentId()));
+                System.out.println("HM DATA IS "+ hm.get(f.getDocumentId()));
             }
             list.add(docu);
             ids.add(f.getDocumentId());
