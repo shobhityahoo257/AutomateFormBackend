@@ -24,7 +24,6 @@ public class User {
     private String _id;
     @NonNull
     private String mobileNumber;
-    @NonNull
     private String userName;
     private byte[] profileImage;
     private boolean parent;
