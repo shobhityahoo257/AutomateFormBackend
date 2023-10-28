@@ -25,6 +25,7 @@ public class RequiredDocumentResponse {
         private String documentId;
         private String documentName;
         private boolean uploadedByUser;
+        private String documentUrl;
     }
 }
 

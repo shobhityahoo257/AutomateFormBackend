@@ -133,6 +133,7 @@ public class UserService {
 
         for (int i=0;i<list.size();i++){
             list.get(i).setDocumentName(m.get(list.get(i).getDocumentId()));
+            list.get(i).setDocumentUrl(m.get(list.get(i).getDocumentUrl()));
         }
 
         RequiredDocumentResponse requiredDocumentResponse=new RequiredDocumentResponse(userId,formId,list);

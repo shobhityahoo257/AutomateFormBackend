@@ -140,31 +140,7 @@ This is used to add Required Documents for a form
         return imageService.addPhoto(userId,documentId,document);
     }
 
-    public String uploadFileToFirebaseStorage(MultipartFile multipartFile) throws IOException {
-        // Initialize Firebase Storage
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream("src/main/java/com/formsv/AutomateForm/fillojafrontend-firebase-adminsdk-quj1e-af637e66bc.json"));
-        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
 
-        // Generate a unique file name
-        String uniqueFileName = System.currentTimeMillis() + "_" + multipartFile.getOriginalFilename();
-
-        // Convert MultipartFile to a temporary File
-        File tempFile = File.createTempFile("temp", null);
-        multipartFile.transferTo(tempFile);
-
-
-        // Define the file destination in Firebase Storage
-        BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "documents/" + uniqueFileName);
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(multipartFile.getContentType()).build();
-
-        // Upload the file
-        Blob blob = storage.create(blobInfo, new FileInputStream(tempFile));
-        tempFile.delete();// Clean up temp file
-
-        String downloadUrl = blob.getStorage().get(blob.getBlobId()).signUrl(365*1000, TimeUnit.DAYS).toString();
-
-        return downloadUrl;
-    }
 
     @GetMapping("/getRequiredDocument/{userId}/{formId}")
     public ResponseEntity getRequiredDocument(@PathVariable("userId") String userId,@PathVariable("formId") String formId){
@@ -349,11 +325,6 @@ This is used to add Required Documents for a form
         response.setHeader(headerKey,headerValue);
         userService.loadFile(response.getWriter(),userId);
     }
-
-
-
-
-
 
 
 
