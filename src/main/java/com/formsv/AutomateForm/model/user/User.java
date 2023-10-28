@@ -15,9 +15,9 @@ import java.util.Date;
 @Getter
 @Setter
 @Document(collection = "user")
-@CompoundIndexes({
-        @CompoundIndex(name = "userName_mobileNumber", def = "{'userName' : 1, 'mobileNumber': 1}")
-})
+//@CompoundIndexes({
+//        @CompoundIndex(name = "userName_mobileNumber", def = "{'userName' : 1, 'mobileNumber': 1}")
+//})
 @NoArgsConstructor
 public class User {
     @Id

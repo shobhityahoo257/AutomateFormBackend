@@ -71,6 +71,7 @@ public class Controller {
     public ResponseEntity createUser(@RequestParam(value = "userName",required = false) String userName,@RequestParam("mobileNumber") String mobileNumber,@RequestParam(value = "profileImage", required = false) MultipartFile profileImage ) throws Exception {
         User user=new User();
         user.setParent(true);
+        if(userName!=null)
         user.setUserName(userName);
         user.setMobileNumber(mobileNumber);
        // user.setProfileImage(new Binary(BsonBinarySubType.BINARY, profileImage.getBytes()));
