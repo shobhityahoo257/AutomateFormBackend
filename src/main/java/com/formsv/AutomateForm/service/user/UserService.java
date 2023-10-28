@@ -109,10 +109,11 @@ public class UserService {
         List<UserDocuments> userDoc=userDocumentsRepo.findByUserId(userId);
         List<RequiredDocumentResponse.Document> list=new ArrayList<>();
         Set<String>  set=new HashSet<>();
+        HashMap<String,String> hm=new HashMap<>();
         List<String> ids=new ArrayList<>();
         for (UserDocuments document:userDoc) {
                     set.add(document.getDocumentId());
-                    set.add(document.getDocumentUrl());
+                    hm.put(document.getDocumentId(),document.getDocumentUrl());
         }
         for (FormRequiredDocument f:reqdoc) {
             RequiredDocumentResponse.Document docu=new RequiredDocumentResponse.Document();
@@ -120,8 +121,10 @@ public class UserService {
             docu.setDocumentName(f.getDocumentName());
             if(set.contains(f.getDocumentId())){
                 docu.setUploadedByUser(true);
+                docu.setDocumentUrl("");
+                docu.setDocumentUrl(hm.get(f.getDocumentId()));
             }
-          list.add(docu);
+            list.add(docu);
             ids.add(f.getDocumentId());
         }
 
