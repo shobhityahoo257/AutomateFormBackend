@@ -13,7 +13,7 @@ public class Transaction {
     private String formId;
     private String transactionRefId;
     private String transactionId;
-    private int totalPayment;
+    private String totalPayment;
     private String transactionStatus;
     private String approvalRefNo;
 }
