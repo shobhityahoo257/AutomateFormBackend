@@ -4,6 +4,7 @@ import com.formsv.AutomateForm.Constants.ExceptionConstants;
 import com.formsv.AutomateForm.model.form.AppliedForm;
 import com.formsv.AutomateForm.model.form.Form;
 import com.formsv.AutomateForm.model.form.FormIdsPojo;
+import com.formsv.AutomateForm.model.form.Transaction;
 import com.formsv.AutomateForm.model.image.Image;
 import com.formsv.AutomateForm.model.supportedFields.SupportedDoc;
 import com.formsv.AutomateForm.model.supportedFields.SupportedFields;
@@ -12,6 +13,7 @@ import com.formsv.AutomateForm.model.user.UserData;
 import com.formsv.AutomateForm.service.*;
 import com.formsv.AutomateForm.service.form.AppliedFormService;
 import com.formsv.AutomateForm.service.form.FormService;
+import com.formsv.AutomateForm.service.form.TransactionsService;
 import com.formsv.AutomateForm.service.image.ImageService;
 import com.formsv.AutomateForm.service.user.UserDataService;
 import com.formsv.AutomateForm.service.user.UserService;
@@ -59,6 +61,8 @@ public class Controller {
     ImageService imageService;
     @Autowired
     FormService formService;
+    @Autowired
+    TransactionsService transactionsService;
 
 
     @GetMapping("/")
@@ -126,8 +130,20 @@ This is used to add Required Documents for a form
         AppliedForm appliedForm = new AppliedForm();
         appliedForm.setFormId(formid);
         appliedForm.setUserId(userId);
+        appliedForm.setStatus(AppliedForm.Status.valueOf("PENDING"));
         return appliedFormService.create(appliedForm);
     }
+
+    @PostMapping("/submitTransaction")
+    public ResponseEntity submitTransaction(@RequestBody(required = true) Transaction transaction) throws Exception {
+        if(transaction.getTransactionStatus().equals("SUCCESS")) {
+           // add Retry Framework Here
+            applyForm(transaction.getFormId(), transaction.getUserId());
+        }
+       return transactionsService.createTransaction(transaction);
+    }
+
+
 
 
     /*

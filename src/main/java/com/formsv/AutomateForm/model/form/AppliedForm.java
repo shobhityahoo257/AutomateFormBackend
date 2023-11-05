@@ -26,6 +26,6 @@ public class AppliedForm {
     private Status status;
 
     public enum Status{
-        PENDING,COMPLETED
+        PENDING,PARTIALYCOMPLETED,COMPLETED
     }
 }
