@@ -95,22 +95,32 @@ public class ImageService {
 
     public boolean deleteFileFromFirebaseStorage(String fileUrl) throws IOException {
         // Parse the file URL to get the blob name
-        String[] urlParts = fileUrl.split("/");
-        String blobName = urlParts[urlParts.length - 1];
+
+
         GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream("src/main/java/com/formsv/AutomateForm/fillojafrontend-firebase-adminsdk-quj1e-af637e66bc.json"));
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+        try {
+            // Parse the file URL to get the blob name
+            String[] urlParts = fileUrl.split("/");
+            String blobName = urlParts[urlParts.length - 1];
 
-        // Define the BlobId using the blob name and bucket name
-        BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "documents/" + blobName);
+            // Define the BlobId using the blob name and bucket name
+            BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "documents/" + blobName);
 
-        // Delete the file
-        boolean deleted = storage.delete(blobId);
+            // Delete the file
+            boolean deleted = storage.delete(blobId);
 
-        if (deleted) {
-            System.out.println("File deleted successfully.");
-            return true;
-        } else {
-            System.out.println("Failed to delete the file or the file does not exist.");
+            if (deleted) {
+                System.out.println("File deleted successfully.");
+                return true;
+
+            } else {
+                System.out.println("Failed to delete the file or the file does not exist.");
+            }
+        } catch (Exception e) {
+            // Log any exceptions that might occur during the deletion process
+            e.printStackTrace();
+            System.out.println("Error deleting the file: " + e.getMessage());
         }
         return false;
     }
