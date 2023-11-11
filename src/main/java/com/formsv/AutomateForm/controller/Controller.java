@@ -135,15 +135,18 @@ This is used to add Required Documents for a form
     }
 
     @PostMapping("/submitTransaction")
-    public ResponseEntity submitTransaction(@RequestBody(required = false) Transaction transaction) throws Exception {
+    public ResponseEntity submitTransaction(@RequestBody(required = false) Transaction transaction)  {
         System.out.println("WITHIN SUBMIT TRANSACTION");
         System.out.println("TRANSACTION STATUS IS "+ transaction.getTransactionStatus());
-        if(transaction.getTransactionStatus().equals("SUCCESS")) {
-           // add Retry Framework Here
-            applyForm(transaction.getFormId(), transaction.getUserId());
-        }
-        System.out.println("FULL TRANSATION IS"+transaction.toString());
-       return transactionsService.createTransaction(transaction);
+       try{
+           if(transaction.getTransactionStatus().equals("SUCCESS")) {
+               // add Retry Framework Here
+               applyForm(transaction.getFormId(), transaction.getUserId());
+           }
+       }catch (Exception e) {
+       }
+        System.out.println("FULL TRANSATION IS" + transaction.toString());
+        return transactionsService.createTransaction(transaction);
     }
 
 

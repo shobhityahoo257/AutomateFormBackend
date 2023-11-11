@@ -21,10 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -50,15 +47,23 @@ public class ImageService {
         SupportedDoc supportedDoc=supportedDocService.getById(documentId);
            if(supportedDoc==null)
                return new ResponseEntity("Document Doesn't Exist with given documentId",HttpStatus.BAD_REQUEST);
-            UserDocuments doc = new UserDocuments();
-            doc.setDocumentId(documentId);
-            doc.setDocumentName(supportedDoc.getDocName());
-            doc.setDocumentUrl(uploadFileToFirebaseStorage(file) );
-            doc.setUserId(userId);
+        UserDocuments doc= userDocumentsRepo.getByUserIdAndDocumentId(userId,documentId);
+
+            if(doc==null) {
+                doc=new UserDocuments();
+                doc.setDocumentId(documentId);
+                doc.setDocumentName(supportedDoc.getDocName());
+                doc.setDocumentUrl(uploadFileToFirebaseStorage(file));
+                doc.setUserId(userId);
+            }
+            else {
+                deleteFileFromFirebaseStorage(doc.getDocumentUrl());
+                doc.setDocumentUrl(uploadFileToFirebaseStorage(file));
+            }
             try {
                 return new ResponseEntity(userDocumentsRepo.save(doc), HttpStatus.CREATED);
             }catch (org.springframework.dao.DuplicateKeyException e){
-                return new ResponseEntity("Document Alredy Exist with same Document Id",HttpStatus.BAD_REQUEST);
+                return new ResponseEntity("Document Already Exist with same Document Id",HttpStatus.BAD_REQUEST);
             }
     }
 
@@ -86,6 +91,28 @@ public class ImageService {
         String downloadUrl = blob.getStorage().get(blob.getBlobId()).signUrl(365*1000, TimeUnit.DAYS).toString();
 
         return downloadUrl;
+    }
+
+    public boolean deleteFileFromFirebaseStorage(String fileUrl) throws IOException {
+        // Parse the file URL to get the blob name
+        String[] urlParts = fileUrl.split("/");
+        String blobName = urlParts[urlParts.length - 1];
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream("src/main/java/com/formsv/AutomateForm/fillojafrontend-firebase-adminsdk-quj1e-af637e66bc.json"));
+        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+
+        // Define the BlobId using the blob name and bucket name
+        BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "documents/" + blobName);
+
+        // Delete the file
+        boolean deleted = storage.delete(blobId);
+
+        if (deleted) {
+            System.out.println("File deleted successfully.");
+            return true;
+        } else {
+            System.out.println("Failed to delete the file or the file does not exist.");
+        }
+        return false;
     }
 
     public Image getPhoto(String id) {
