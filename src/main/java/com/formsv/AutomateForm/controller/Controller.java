@@ -29,8 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -337,16 +335,16 @@ This is used to add Required Documents for a form
 
     }
 
-    @GetMapping("/api/download/csv/{userId}")
-    public void downloadFile(HttpServletResponse response,@PathVariable("userId") String userId ) throws IOException {
-        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-        String currentDateTime = dateFormatter.format(new Date());
-        response.setContentType("text/csv");
-        String headerKey = "Content-Disposition";
-        String headerValue = "attachment; filename=userData_" + userId + ".csv";
-        response.setHeader(headerKey,headerValue);
-        userService.loadFile(response.getWriter(),userId);
-    }
+//    @GetMapping("/api/download/csv/{userId}")
+//    public void downloadFile(HttpServletResponse response,@PathVariable("userId") String userId ) throws IOException {
+//        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+//        String currentDateTime = dateFormatter.format(new Date());
+//        response.setContentType("text/csv");
+//        String headerKey = "Content-Disposition";
+//        String headerValue = "attachment; filename=userData_" + userId + ".csv";
+//        response.setHeader(headerKey,headerValue);
+//        userService.loadFile(response.getWriter(),userId);
+//    }
 
 
 
