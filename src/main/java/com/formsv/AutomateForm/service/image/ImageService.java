@@ -103,9 +103,10 @@ public class ImageService {
             // Parse the file URL to get the blob name
             String[] urlParts = fileUrl.split("/");
             String blobName = urlParts[urlParts.length - 1];
+            String fileName=urlParts[urlParts.length - 1].split("\\?")[0];
 
             // Define the BlobId using the blob name and bucket name
-            BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "documents/" + blobName);
+            BlobId blobId = BlobId.of("fillojafrontend.appspot.com", "documents/" +fileName);
 
             // Delete the file
             boolean deleted = storage.delete(blobId);
