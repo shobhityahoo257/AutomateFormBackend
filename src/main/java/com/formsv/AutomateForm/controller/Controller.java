@@ -20,6 +20,7 @@ import com.formsv.AutomateForm.service.user.UserService;
 import com.formsv.AutomateForm.utils.OpenCsvUtil;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.BsonBinarySubType;
 import org.bson.types.Binary;
 import org.json.JSONObject;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @CrossOrigin(origins = "*")
 @RestController()
 public class Controller {
@@ -71,6 +73,7 @@ public class Controller {
 
     @GetMapping("getFamily/{mobileNumber}")
     public ResponseEntity getFamily(@PathVariable("mobileNumber") String mobileNumber) throws Exception {
+        log.info("called getFamily: " + mobileNumber);
         return userService.getFamily(mobileNumber);
     }
 

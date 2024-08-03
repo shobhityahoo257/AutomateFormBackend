@@ -21,6 +21,7 @@ import com.formsv.AutomateForm.responseModel.employeeResponseModel.AllUserData;
 import com.formsv.AutomateForm.service.SupportedDocService;
 import com.formsv.AutomateForm.service.SupportedFieldsService;
 import com.formsv.AutomateForm.utils.OpenCsvUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,7 @@ import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -76,7 +78,14 @@ public class UserService {
 
 
     public ResponseEntity getFamily(String mobileNumber) throws Exception{
-        List<User> userList=userRepo.findByMobileNumber(mobileNumber);
+        List<User> userList = List.of();
+        log.info("fetching user for mobile number " + mobileNumber);
+        try {
+             userList = userRepo.findByMobileNumber(mobileNumber);
+        }catch (Exception e){
+            log.info("Getting Error while fetching  user for mobile number {}", mobileNumber);
+            log.error("Getting Error while fetching  user for mobile number {}", mobileNumber);
+        }
         FamilyResponse familyResponse =new FamilyResponse();
         if(userList==null || userList.size()==0)
             return new ResponseEntity("NO Family Exist",HttpStatus.NOT_FOUND);
